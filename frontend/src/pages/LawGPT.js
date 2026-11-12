@@ -257,8 +257,12 @@ export default function LawGPT() {
   };
 
   const formatMessageContent = (content) => {
-    // Basic markdown-like formatting
+    // Basic markdown-like formatting — escape HTML first since this is rendered as HTML
     return content
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/^#{3,} (.*$)/gm, '<strong>$1</strong>')
+      .replace(/^#{1,2} (.*$)/gm, '<strong style="font-size:1.1em">$1</strong>')
+      .replace(/^(\s*)[*-] /gm, '$1• ')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\[([^\]]+)\]/g, '<span class="lawgpt-citation">$1</span>')

@@ -545,29 +545,6 @@ router.get('/chats', verifyToken, async (req, res) => {
   }
 });
 
-// ─── POST /api/firm/add-credits ───────────────────────────
-// Firm admin adds credits to pool (self-serve, not used for now)
-router.post('/add-credits', verifyToken, async (req, res) => {
-  try {
-    const firm = await verifyFirmAdmin(req.user.id);
-    if (!firm) return res.status(403).json({ error: 'Not a firm admin' });
-
-    const { credits } = req.body;
-    if (!credits || credits <= 0) {
-      return res.status(400).json({ error: 'Invalid credits amount' });
-    }
-
-    await supabase
-      .from('firm_profiles')
-      .update({ total_credits: firm.total_credits + Number(credits) })
-      .eq('id', firm.id);
-
-    res.json({ success: true, message: `${credits} credits added to firm pool` });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to add credits' });
-  }
-});
-
 // ─── GET /api/firm/invites ─────────────────────────────────
 router.get('/invites', verifyToken, async (req, res) => {
   try {

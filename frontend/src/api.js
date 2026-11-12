@@ -447,13 +447,6 @@ async getTranslationById(id) {
     });
   },
 
-  async firmAddCredits(credits) {
-    const token = await getToken();
-    return axios.post(`${API_BASE}/firm/add-credits`, { credits }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-  },
-
   async firmDistributeCredits(memberId, credits) {
     const token = await getToken();
     return axios.post(`${API_BASE}/firm/distribute-credits`, { memberId, credits }, {
