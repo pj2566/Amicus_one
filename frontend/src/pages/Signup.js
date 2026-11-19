@@ -22,7 +22,7 @@ export default function Signup() {
       await signup(email, password, name);
       localStorage.setItem('pending_name', name);
       navigate('/dashboard');
-      toast.success('Account created! Welcome to Lexora.');
+      toast.success('Account created! Welcome to Amicus One.');
     } catch (err) {
       toast.error(err.message || 'Signup failed');
       setLoading(false);
@@ -36,7 +36,7 @@ export default function Signup() {
         {/* Logo */}
         <div className="auth-logo-wrap">
           <div className="auth-logo-icon">⚖️</div>
-          <h1 className="auth-brand">Lexora</h1>
+          <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">The Modern AI Workspace for Legal Professionals</p>
         </div>
 

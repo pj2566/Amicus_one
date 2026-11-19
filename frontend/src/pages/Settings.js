@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { api } from '../api';
 import Layout from '../components/Layout';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
   const { userProfile, refreshProfile } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
 
@@ -280,26 +278,6 @@ export default function Settings() {
                     <option>Detailed (5-6 pages)</option>
                     <option>Comprehensive (8-10 pages)</option>
                   </select>
-                </div>
-
-                <div className="preference-item">
-                  <div className="pref-info">
-                    <div className="pref-label">Theme</div>
-                    <div className="pref-desc">
-                      Interface color theme — changes apply instantly
-                    </div>
-                  </div>
-                  <div className="theme-toggle-wrap">
-                    <span className="theme-label">
-                      {theme === 'light' ? '☀️ Light' : '🌙 Dark'}
-                    </span>
-                    <button
-                      className={`theme-toggle-btn ${theme === 'dark' ? 'dark' : ''}`}
-                      onClick={toggleTheme}
-                    >
-                      <span className="theme-toggle-knob" />
-                    </button>
-                  </div>
                 </div>
 
                 <div className="preference-item">

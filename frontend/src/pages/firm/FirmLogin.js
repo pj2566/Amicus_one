@@ -56,7 +56,7 @@ export default function FirmLogin() {
 }}>
         <div className="auth-logo-wrap">
           <div className="auth-logo-icon">🏛️</div>
-          <h1 className="auth-brand">Lexora</h1>
+          <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">Law Firm Workspace</p>
         </div>
 

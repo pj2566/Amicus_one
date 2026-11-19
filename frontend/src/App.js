@@ -27,6 +27,7 @@ import FirmClients from './pages/firm/FirmClients';
 import JoinFirm from './pages/firm/JoinFirm';
 import DraftReview from './pages/DraftReview';
 import './App.css';
+import './styles/amicus.css';
 
 function ProtectedRoute({ children }) {
   const { user, userProfile } = useAuth();

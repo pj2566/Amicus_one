@@ -3,223 +3,139 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import Layout from '../components/Layout';
+import Icon from '../components/Icon';
 
+const WORKFLOWS = [
+  { icon: 'file', title: 'Guided Legal Drafting', path: '/generate',
+    desc: 'Standard Indian instruments across 12 practice areas, with a live engrossment preview as you fill the details.' },
+  { icon: 'search', title: 'Statutory Research', path: '/lawgpt',
+    desc: 'BNS, BNSS & BSA answered from the official text, with every citation verified and old-code equivalents noted.' },
+  { icon: 'swap', title: 'Courtroom Translation', path: '/translate',
+    desc: 'Translate deeds and orders between English and Hindi, Marathi, Bengali, Tamil and more — scanned PDFs included.' },
+  { icon: 'clipboard', title: 'Comparative Draft Audit', path: '/draft-review',
+    desc: 'Compare up to 5 versions of an agreement to surface missing protections, indemnity gaps and risk.' },
+];
+
+const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
 export default function Dashboard() {
   const { userProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const [history, setHistory] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Redirect firm members to firm dashboard
   useEffect(() => {
-    if (userProfile?.is_firm_member) {
-      navigate('/firm/dashboard', { replace: true });
-    }
+    if (userProfile?.is_firm_member) navigate('/firm/dashboard', { replace: true });
   }, [userProfile, navigate]);
-  const [history, setHistory] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
-  const [stats, setStats] = useState(null);
 
   const loadData = useCallback(async () => {
-    try {
-      const [historyRes, statsRes] = await Promise.all([
-        api.getHistory(),
-        api.getBillingStats()
-      ]);
-      setHistory(historyRes.data.documents || []);
-      setStats(statsRes.data.stats || null);
-    } catch (err) {
-      console.error('Dashboard load error:', err);
-      try {
-        const historyRes = await api.getHistory();
-        setHistory(historyRes.data.documents || []);
-      } catch (e) {
-        setHistory([]);
-      }
-    }
-    setHistoryLoading(false);
+    const [h, c, l] = await Promise.allSettled([api.getHistory(), api.getClients(), api.lawgptGetChats()]);
+    if (h.status === 'fulfilled') setHistory(h.value.data.documents || []);
+    if (c.status === 'fulfilled') setClients(c.value.data.clients || []);
+    if (l.status === 'fulfilled') setChats(l.value.data.chats || []);
+    setLoading(false);
   }, []);
 
- // eslint-disable-next-line react-hooks/exhaustive-deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     refreshProfile();
     loadData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'Just now';
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric', month: 'short', year: 'numeric'
-    });
-  };
-
-  const getCategoryIcon = (category) => {
-    const icons = {
-      'Property Law': '🏠', 'Corporate Law': '🏢', 'Criminal Law': '⚖️',
-      'Family Law': '👨‍👩‍👧', 'Employment Law': '💼', 'Taxation Law': '💰',
-      'Consumer Law': '🛒', 'Cyber Law': '💻', 'Startup Law': '🚀',
-      'Civil Litigation': '📋', 'Arbitration Law': '🤝',
-      'Intellectual Property Law': '💡', 'Divorce / Family Law': '👨‍👩‍👧'
-    };
-    return icons[category] || '📄';
-  };
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const dateLine = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const draftsThisWeek = history.filter(d => new Date(d.created_at).getTime() > weekAgo).length;
+  const linkedClients = new Set(history.map(d => d.client_id).filter(Boolean)).size;
+  const clientName = id => clients.find(c => c.id === id)?.name;
 
   return (
     <Layout>
-      <div className="dashboard-page">
-
-        {/* Welcome Header */}
-        <div className="dashboard-header">
+      <div className="am-page">
+        <div className="am-page-head">
           <div>
-            <h1 className="dashboard-welcome">
-              Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'},
-              {' '}{userProfile?.name || 'Advocate'} 👋
-            </h1>
-            <p className="dashboard-subtext">
-              Here's your legal workspace overview for today.
-            </p>
+            <div className="am-eyebrow">{dateLine}</div>
+            <h1 className="am-title">{greeting}, {userProfile?.name || 'Advocate'}</h1>
           </div>
-          <div className="dashboard-header-actions">
-            <button
-              className="dash-action-btn primary"
-              onClick={() => navigate('/generate')}
-            >
-              ✍️ New Draft
-            </button>
-            <button
-              className="dash-action-btn secondary"
-              onClick={() => navigate('/lawgpt')}
-            >
-              ⚖️ LawGPT
+          <div className="am-page-actions">
+            <button className="am-btn" onClick={() => navigate('/lawgpt')}>Open Research</button>
+            <button className="am-btn am-btn-primary" onClick={() => navigate('/generate')}>
+              <Icon name="plus" size={16} /> New Legal Draft
             </button>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="dashboard-stats">
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon">🪙</div>
-            <div className="dash-stat-content">
-              <div className="dash-stat-number">
-                {userProfile?.credits ?? 0}
-              </div>
-              <div className="dash-stat-label">Credits Remaining</div>
-            </div>
+        <div className="am-stats">
+          <div className="am-stat">
+            <div className="am-stat-label">Drafts Prepared</div>
+            <div className="am-stat-value">{userProfile?.documents_generated ?? history.length}</div>
+            <div className={`am-stat-note ${draftsThisWeek ? 'up' : ''}`}>{draftsThisWeek ? `+${draftsThisWeek} this week` : 'None this week'}</div>
           </div>
-
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon">📄</div>
-            <div className="dash-stat-content">
-              <div className="dash-stat-number">
-                {userProfile?.documents_generated ?? 0}
-              </div>
-              <div className="dash-stat-label">Documents Generated</div>
-            </div>
+          <div className="am-stat">
+            <div className="am-stat-label">Client Directory</div>
+            <div className="am-stat-value">{clients.length}</div>
+            <div className="am-stat-note">{linkedClients} linked to drafts</div>
           </div>
-
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon">⚖️</div>
-            <div className="dash-stat-content">
-              <div className="dash-stat-number">
-                {stats?.lawgptCount ?? userProfile?.lawgpt_usage ?? 0}
-              </div>
-              <div className="dash-stat-label">LawGPT Sessions</div>
-            </div>
+          <div className="am-stat">
+            <div className="am-stat-label">Research Briefs</div>
+            <div className="am-stat-value">{chats.length}</div>
+            <div className="am-stat-note">BNS · BNSS · BSA verified</div>
           </div>
-
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon">💾</div>
-            <div className="dash-stat-content">
-              <div className="dash-stat-number">
-                {history.length}
-              </div>
-              <div className="dash-stat-label">Saved Documents</div>
-            </div>
+          <div className="am-stat accent">
+            <div className="am-stat-label">Allowance Balance</div>
+            <div className="am-stat-value">{userProfile?.credits ?? 0}</div>
+            <div className="am-stat-note">1 credit / standard draft</div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="dashboard-section">
-          <h2 className="section-title">Quick Actions</h2>
-          <div className="quick-actions-grid">
-            {[
-              { icon: '✍️', label: 'Generate New Draft', desc: 'Create a legal document using AI', path: '/generate', color: '#c9a84c' },
-              { icon: '⚖️', label: 'Open LawGPT', desc: 'AI legal research assistant', path: '/lawgpt', color: '#4c9ac9' },
-              { icon: '📄', label: 'View Documents', desc: 'Browse your saved drafts', path: '/documents', color: '#4cc97a' },
-              { icon: '👥', label: 'Manage Clients', desc: 'View and add client records', path: '/clients', color: '#c94c8a' },
-            ].map((action, i) => (
-              <div
-                key={i}
-                className="quick-action-card"
-                onClick={() => navigate(action.path)}
-                style={{ '--action-color': action.color }}
-              >
-                <div className="qa-icon" style={{ background: action.color + '22', color: action.color }}>
-                  {action.icon}
-                </div>
-                <div className="qa-content">
-                  <div className="qa-label">{action.label}</div>
-                  <div className="qa-desc">{action.desc}</div>
-                </div>
-                <div className="qa-arrow">→</div>
+        <div className="am-section-label">Chambers Workflows</div>
+        <div className="am-workflows">
+          {WORKFLOWS.map(w => (
+            <button key={w.title} className="am-workflow" onClick={() => navigate(w.path)}>
+              <div className="am-workflow-icon"><Icon name={w.icon} size={19} /></div>
+              <div>
+                <div className="am-workflow-title">{w.title}</div>
+                <div className="am-workflow-desc">{w.desc}</div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Documents */}
-        <div className="dashboard-section">
-          <div className="section-header">
-            <h2 className="section-title">Recent Documents</h2>
-            <button
-              className="section-link"
-              onClick={() => navigate('/documents')}
-            >
-              View All →
+              <Icon name="chevronRight" className="am-workflow-arrow" />
             </button>
-          </div>
+          ))}
+        </div>
 
-          {historyLoading ? (
-            <div className="dash-skeleton-list">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="skeleton-item" />
+        <div className="am-section-label">
+          Recent Chambers Folio
+          <button className="am-link" onClick={() => navigate('/documents')}>View full register <Icon name="arrowRight" size={15} /></button>
+        </div>
+        <div className="am-table-wrap">
+          <table className="am-table">
+            <thead>
+              <tr><th>Instrument / Title</th><th>Practice Area</th><th>Client</th><th>Prepared</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="5" className="am-empty">Loading your folio…</td></tr>
+              ) : history.length === 0 ? (
+                <tr><td colSpan="5" className="am-empty">
+                  No drafts yet. <button className="am-link" onClick={() => navigate('/generate')}>Prepare your first instrument</button>
+                </td></tr>
+              ) : history.slice(0, 6).map(doc => (
+                <tr key={doc.id}>
+                  <td>{doc.document_type_name}</td>
+                  <td>{doc.category_name}</td>
+                  <td>{clientName(doc.client_id) || <span style={{ color: 'var(--am-ink-4)' }}>—</span>}</td>
+                  <td>
+                    <span className={`am-badge ${doc.is_shared_with_firm ? 'navy' : ''}`}>{formatDate(doc.created_at)}</span>
+                  </td>
+                  <td><button className="am-link" onClick={() => navigate('/documents')}>Open</button></td>
+                </tr>
               ))}
-            </div>
-          ) : history.length === 0 ? (
-            <div className="dash-empty">
-              <div className="dash-empty-icon">📄</div>
-              <p>No documents yet.</p>
-              <button
-                className="dash-action-btn primary"
-                onClick={() => navigate('/generate')}
-              >
-                Generate Your First Document
-              </button>
-            </div>
-          ) : (
-            <div className="recent-docs-list">
-              {history.slice(0, 5).map(doc => (
-                <div key={doc.id} className="recent-doc-item">
-                  <div className="doc-item-icon">
-                    {getCategoryIcon(doc.category_name)}
-                  </div>
-                  <div className="doc-item-info">
-                    <div className="doc-item-name">
-                      {doc.document_type_name}
-                    </div>
-                    <div className="doc-item-category">
-                      {doc.category_name}
-                    </div>
-                  </div>
-                  <div className="doc-item-date">
-                    {formatDate(doc.created_at)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+            </tbody>
+          </table>
         </div>
-
       </div>
     </Layout>
   );

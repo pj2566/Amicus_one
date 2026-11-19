@@ -13,7 +13,7 @@ return (
         {/* Logo */}
         <div className="auth-choice-logo">
           <div style={{ fontSize: '2.5rem' }}>⚖️</div>
-          <h1 className="auth-brand" style={{ fontSize: '1.8rem' }}>Lexora</h1>
+          <h1 className="auth-brand" style={{ fontSize: '1.8rem' }}>Amicus One</h1>
           <p className="auth-tagline">The Modern AI Workspace for Legal Professionals</p>
         </div>
 
@@ -22,7 +22,7 @@ return (
         </h2>
         <p className="auth-choice-sub">
           {mode === 'signup'
-            ? 'Choose how you want to use Lexora'
+            ? 'Choose how you want to use Amicus One'
             : 'Choose how you want to sign in'}
         </p>
 

@@ -315,7 +315,7 @@ export default function FirmMembers() {
                   <div className="firm-invite-code-label">Share this invite code:</div>
                   <div className="firm-invite-code">{generatedCode}</div>
                   <div className="firm-invite-code-note">
-                    Share this code with the lawyer. They can join at <strong>lexora.in/firm/join</strong>
+                    Share this code with the lawyer. They can join at <strong>amicusone.web.app/firm/join</strong>
                   </div>
                   <button
                     className="firm-btn-outline"

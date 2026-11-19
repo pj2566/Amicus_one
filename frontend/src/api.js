@@ -346,11 +346,12 @@ export const api = {
   // TRANSLATE API
   // ─────────────────────────────────────────────
 
-  async translateDocument(file, sourceLanguage) {
+  async translateDocument(file, sourceLanguage, targetLanguage = 'English') {
     const token = await getToken();
     const formData = new FormData();
     formData.append('file', file);
     formData.append('sourceLanguage', sourceLanguage);
+    formData.append('targetLanguage', targetLanguage);
     return axios.post(`${API_BASE}/translate/document`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -391,6 +392,21 @@ async getTranslationById(id) {
     const token = await getToken();
     return axios.get(`${API_BASE}/firm/stats`, {
       headers: { Authorization: `Bearer ${token}` }
+    });
+  },
+
+  async firmGetCredits() {
+    const token = await getToken();
+    return axios.get(`${API_BASE}/firm/credits`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  },
+
+  async getDocumentTemplate(documentTypeId, language) {
+    const token = await getToken();
+    return axios.get(`${API_BASE}/documents/template/${documentTypeId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { language }
     });
   },
 

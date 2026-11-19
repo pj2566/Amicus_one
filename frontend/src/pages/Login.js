@@ -57,7 +57,7 @@ export default function Login() {
         <div className="auth-card-new" data-theme="light">
           <div className="auth-logo-wrap">
             <div className="auth-logo-icon">🔑</div>
-            <h1 className="auth-brand">Lexora</h1>
+            <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">Reset your password</p>
           </div>
 
@@ -130,7 +130,7 @@ export default function Login() {
         {/* Logo */}
         <div className="auth-logo-wrap">
           <div className="auth-logo-icon">⚖️</div>
-          <h1 className="auth-brand">Lexora</h1>
+          <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">The Modern AI Workspace for Legal Professionals</p>
         </div>
 

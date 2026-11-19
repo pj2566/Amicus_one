@@ -92,11 +92,11 @@ export default function LandingPage() {
             <span className="lp-dot lp-dot-red"></span>
             <span className="lp-dot lp-dot-yellow"></span>
             <span className="lp-dot lp-dot-green"></span>
-            <span className="lp-dash-url">app.lexora.in — Dashboard</span>
+            <span className="lp-dash-url">amicusone.web.app — Dashboard</span>
           </div>
           <div className="lp-dash-body">
             <div className="lp-dash-sidebar">
-              <div className="lp-dash-brand">Lexora</div>
+              <div className="lp-dash-brand">Amicus One</div>
               {[
                 { icon: '⊞', label: 'Dashboard', active: true },
                 { icon: '✦', label: 'Generate' },
@@ -256,7 +256,7 @@ export default function LandingPage() {
             <div className="lp-chat-bubble lp-chat-user">
               What sections apply in a cheque bounce case under ₹2 lakh?
             </div>
-            <div className="lp-chat-label" style={{ marginTop: '0.75rem' }}>Lexora AI</div>
+            <div className="lp-chat-label" style={{ marginTop: '0.75rem' }}>Amicus One</div>
             <div className="lp-chat-bubble lp-chat-ai">
               For a cheque bounce case, the primary provision is{' '}
               <span className="lp-cite">Section 138 NI Act</span>. You should also consider{' '}
@@ -331,7 +331,7 @@ export default function LandingPage() {
         color: '#a78bfa',
         margin: '0.5rem 0',
       }}>
-        ↓ Lexora AI Translation
+        ↓ Amicus One Translation
       </div>
       <div className="lp-chat-bubble lp-chat-ai">
         <div className="lp-chat-label" style={{ marginBottom: '0.5rem' }}>
@@ -427,7 +427,7 @@ export default function LandingPage() {
             Ready to transform your legal practice?
           </h2>
           <p className="lp-cta-banner-sub">
-            Join lawyers across India using Lexora to draft faster, research smarter, and serve clients better.
+            Join lawyers across India using Amicus One to draft faster, research smarter, and serve clients better.
           </p>
           <div className="lp-hero-ctas" style={{ justifyContent: 'center' }}>
             <button className="lp-cta-main" onClick={() => navigate('/auth?mode=signup')}>
@@ -471,7 +471,7 @@ export default function LandingPage() {
 </div>
           </div>
           <div className="lp-footer-bottom">
-            <span>© 2025 Lexora. All rights reserved.</span>
+            <span>© 2025 Amicus One. All rights reserved.</span>
             <span>Built for Indian lawyers ⚖️</span>
           </div>
         </div>

@@ -7,6 +7,17 @@ import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle, Headi
 import { saveAs } from 'file-saver';
 import toast from 'react-hot-toast';
 import LegalSectionsAssistant from '../components/LegalSectionsAssistant';
+import Layout from '../components/Layout';
+import Icon, { CATEGORY_ICONS } from '../components/Icon';
+import LivePreview, { groupFields } from '../components/LivePreview';
+
+const LENGTHS = [
+  { value: 'short', label: 'Concise', pages: '1–2 Pages', time: '~10 sec' },
+  { value: 'medium', label: 'Standard', pages: '3–4 Pages', time: '~20 sec' },
+  { value: 'detailed', label: 'Detailed', pages: '5–6 Pages', time: '~40 sec' },
+  { value: 'comprehensive', label: 'Exhaustive', pages: '8–10 Pages', time: '~90 sec' },
+];
+const LANGUAGES = ['English', 'Hindi', 'Marathi', 'Bengali', 'Tamil', 'Kannada', 'Telugu'];
 
 // Strip markdown and clean text for display and PDF
 const cleanMarkdown = (text) => {
@@ -69,7 +80,8 @@ export default function Generate() {
   const [linkedDocId, setLinkedDocId] = useState(null);
   const [linkSuccess, setLinkSuccess] = useState(false);
   // Freeform mode state
-  const [mode, setMode] = useState('');
+  const [mode, setMode] = useState('guided');
+  const [filter, setFilter] = useState('');
   const [freeformPrompt, setFreeformPrompt] = useState('');
   const [freeformFiles, setFreeformFiles] = useState([]);
   const [freeformLoading, setFreeformLoading] = useState(false);
@@ -132,7 +144,6 @@ export default function Generate() {
 
   const handleCategorySelect = (cat) => {
     setSelectedCategory(cat);
-    setStep(2);
   };
 
   const handleDocTypeSelect = (dt) => {
@@ -264,15 +275,9 @@ export default function Generate() {
   };
 
   const handleBack = () => {
-    if (step === 4 && mode === 'freeform') { setStep(1); setMode(''); }
-    else if (step === 1 && mode !== '') { setMode(''); }
-    else if (step === 1) {
-      const isFirm = userProfile?.firm_role || userProfile?.is_firm_member;
-      navigate(isFirm ? '/firm/dashboard' : '/dashboard');
-    }
-    else if (step === 2) { setStep(1); setSelectedCategory(null); }
-    else if (step === 3) { setStep(2); setSelectedDocType(null); }
-    else if (step === 4) { setStep(3); }
+    if (step === 4) setStep(mode === 'freeform' ? 1 : 3);
+    else if (step === 3) { setStep(1); setSelectedDocType(null); }
+    else navigate(userProfile?.is_firm_member ? '/firm/dashboard' : '/dashboard');
   };
 
   // ─────────────────────────────────────────────
@@ -623,96 +628,234 @@ export default function Generate() {
     }
   };
 
+  const isFirm = !!userProfile?.is_firm_member;
+  const creditsLeft = isFirm ? firmCredits : (userProfile?.credits ?? 0);
+  const outOfCredits = isFirm ? (firmCredits !== null && firmCredits <= 0) : (userProfile?.credits ?? 0) <= 0;
+  const activeCategory = selectedCategory || categories[0];
+  const query = filter.trim().toLowerCase();
+  const visibleTypes = query
+    ? categories.flatMap(c => (c.document_types || []).map(dt => ({ ...dt, _cat: c })))
+        .filter(dt => `${dt.name} ${dt.description || ''}`.toLowerCase().includes(query))
+    : (activeCategory?.document_types || []).map(dt => ({ ...dt, _cat: activeCategory }));
+  const totalTypes = categories.reduce((n, c) => n + (c.document_types?.length || 0), 0);
+  const lengthInfo = LENGTHS.find(l => l.value === documentLength);
+
   if (categoriesLoading) return (
-    <div className="loading-screen">
-      <div className="spinner"></div>
-      <p>Loading categories...</p>
-    </div>
+    <Layout>
+      <div className="am-page"><div className="am-eyebrow">Loading practice areas…</div></div>
+    </Layout>
   );
 
-  return (
-    <div className="app-container">
-      <nav className="navbar">
-        <button className="btn-ghost" onClick={handleBack}>← Back</button>
-        <div className="nav-logo">⚖️ Lexora</div>
-        <span className="credits-badge">
-          🪙 {userProfile?.is_firm_member ? (firmCredits ?? '...') : (userProfile?.credits ?? 0)} Credits
-        </span>
-      </nav>
+  // ── Drafting studio: form on the left, live A4 engrossment on the right ──
+  if (step === 3 && selectedDocType) {
+    const groups = groupFields(selectedDocType.fields);
+    return (
+      <Layout>
+        <div className="am-studio">
+          <form className="am-studio-form" onSubmit={handleGenerate}>
+            <button type="button" className="am-studio-back" onClick={handleBack}>
+              <Icon name="arrowLeft" size={15} /> {selectedCategory?.name}
+            </button>
+            <div className="am-eyebrow">Drafting Studio</div>
+            <h1 className="am-studio-title">{selectedDocType.name}</h1>
+            {selectedDocType.description && <p className="am-subtitle" style={{ marginTop: 4, fontSize: 14.5 }}>{selectedDocType.description}</p>}
 
-      <main className="main-content">
-        {/* Progress Steps — hide on mode selector */}
-        {mode !== '' && (
-        <div className="progress-steps">
-          {['Category', 'Document Type', 'Fill Form', 'Result'].map((label, i) => (
-            <div key={i} className={`progress-step
-              ${step > i + 1 ? 'done' : ''}
-              ${step === i + 1 ? 'active' : ''}`}>
-              <div className="step-circle">
-                {step > i + 1 ? '✓' : i + 1}
+            <div className="am-group" style={{ marginTop: 20 }}>
+              <div className="am-group-head">
+                <span className="am-group-title">Drafting depth & length</span>
+                <span className="am-group-note mono">{lengthInfo ? lengthInfo.pages : `${customPages} Pages`}</span>
               </div>
-              <span>{label}</span>
+              <div className="am-segment">
+                {LENGTHS.map(l => (
+                  <button type="button" key={l.value} className={documentLength === l.value ? 'active' : ''} onClick={() => setDocumentLength(l.value)}>
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+                <button type="button" className="am-link" onClick={() => setDocumentLength('custom')}>Custom length</button>
+                {documentLength === 'custom' && (
+                  <>
+                    <input
+                      type="number" min="1" max="100" className="am-input" style={{ width: 90, height: 36 }}
+                      value={customPages}
+                      onChange={e => setCustomPages(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                    />
+                    <span className="am-group-note">pages (max 100)</span>
+                  </>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-        )}
 
-        {/* ── MODE SELECTOR ── */}
-        {step === 1 && mode === '' && (
-          <div className="mode-selector-wrap">
-            <h2 className="mode-selector-title">Choose Your Drafting Mode</h2>
-            <p className="mode-selector-sub">
-              Select how you want to generate your legal document today.
-            </p>
-            <div className="mode-selector-grid">
-
-              <div className="mode-card" onClick={() => setMode('guided')}>
-                <div className="mode-card-icon">📋</div>
-                <div className="mode-card-title">Guided Mode</div>
-                <div className="mode-card-desc">
-                  Choose from 12 legal categories and 80+ document types.
-                  Fill a smart form and AI generates a complete professional document.
-                  Best for standard Indian legal documents.
+            {groups.map((g, gi) => (
+              <div className="am-group" key={g.key}>
+                <div className="am-group-head">
+                  <span className="am-group-title">{g.title}</span>
+                  {gi === 0 && <span className="am-group-note">Live sync enabled</span>}
                 </div>
-                <div className="mode-card-tags">
-                  <span className="mode-tag">12 Categories</span>
-                  <span className="mode-tag">80+ Doc Types</span>
-                  <span className="mode-tag">Smart Forms</span>
-                </div>
-                <div className="mode-card-btn">Select Guided Mode →</div>
+                {g.fields.map(field => (
+                  <div className="am-field" key={field.id}>
+                    <label className="am-label">
+                      {field.label}{field.required && <span className="req"> *</span>}
+                    </label>
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        className="am-textarea" rows={3}
+                        value={formData[field.id] || ''}
+                        onChange={e => handleFormChange(field.id, e.target.value)}
+                        required={field.required}
+                      />
+                    ) : (
+                      <input
+                        className={`am-input ${field.type === 'number' ? 'money' : ''}`}
+                        type={field.type}
+                        value={formData[field.id] || ''}
+                        onChange={e => handleFormChange(field.id, e.target.value)}
+                        required={field.required}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
+            ))}
 
-              <div className="mode-card mode-card-freeform" onClick={() => setMode('freeform')}>
-                <div className="mode-card-icon">✨</div>
-                <div className="mode-card-title">Freeform Mode</div>
-                <div className="mode-card-desc">
-                  Describe exactly what you need in plain language.
-                  Upload reference documents for context. AI drafts
-                  any legal document — fully customizable, no restrictions.
-                </div>
-                <div className="mode-card-tags">
-                  <span className="mode-tag">Any Document</span>
-                  <span className="mode-tag">Upload References</span>
-                  <span className="mode-tag">Full Control</span>
-                </div>
-                <div className="mode-card-btn mode-card-btn-freeform">Select Freeform Mode →</div>
+            <div className="am-group">
+              <div className="am-group-head"><span className="am-group-title">Language & statutory provisions</span></div>
+              <div className="am-field">
+                <label className="am-label">Document language</label>
+                <select className="am-select" value={selectedLanguage} onChange={e => setSelectedLanguage(e.target.value)}>
+                  {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
               </div>
-
+              <LegalSectionsAssistant
+                categoryName={selectedCategory?.name}
+                documentTypeName={selectedDocType?.name}
+                formData={formData}
+                selectedSections={selectedSections}
+                onAddSection={handleAddSection}
+                onRemoveSection={handleRemoveSection}
+                onAddAllSections={handleAddAllSections}
+              />
             </div>
+
+            <button type="submit" className="am-btn am-btn-primary am-btn-block" disabled={loading || outOfCredits}>
+              {loading
+                ? `Drafting the full instrument… (${lengthInfo ? lengthInfo.time : `~${Math.ceil(customPages * 5)} sec`})`
+                : 'Generate Full Instrument · 1 Credit'}
+            </button>
+            <div className="am-credit-note">
+              {outOfCredits ? 'No credits remaining — top up to generate.' : `${creditsLeft ?? '…'} credits available`}
+            </div>
+          </form>
+
+          <div className="am-studio-preview">
+            <LivePreview
+              categoryName={selectedCategory?.name}
+              docType={selectedDocType}
+              formData={formData}
+              language={selectedLanguage}
+              documentLength={documentLength}
+              customPages={customPages}
+            />
           </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="am-page">
+        {step === 1 && (
+          <>
+            <div className="am-page-head" style={{ borderBottom: 0, paddingBottom: 0 }}>
+              <div>
+                <h1 className="am-title">{mode === 'freeform' ? 'Describe Your Instrument' : 'Select Practice Area & Instrument'}</h1>
+                <p className="am-subtitle">
+                  {mode === 'freeform'
+                    ? 'Describe the document in plain language and attach reference files; it will be drafted in full.'
+                    : 'Choose a legal domain on the left to inspect the standard Indian instruments available.'}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                {mode === 'guided' && (
+                  <div className="am-search">
+                    <Icon name="search" size={16} />
+                    <input placeholder={`Filter ${totalTypes} templates…`} value={filter} onChange={e => setFilter(e.target.value)} />
+                  </div>
+                )}
+                <div className="am-mode-switch">
+                  <button className={mode === 'guided' ? 'active' : ''} onClick={() => setMode('guided')}>Guided</button>
+                  <button className={mode === 'freeform' ? 'active' : ''} onClick={() => setMode('freeform')}>Freeform</button>
+                </div>
+              </div>
+            </div>
+
+            {mode === 'guided' && categories.length === 0 && (
+              <div className="am-empty">
+                Practice areas could not be loaded. <button className="am-link" onClick={loadCategories}>Retry</button>
+              </div>
+            )}
+
+            {mode === 'guided' && categories.length > 0 && (
+              <div className="am-picker">
+                <div>
+                  <div className="am-nav-label" style={{ paddingLeft: 10, paddingTop: 0 }}>{categories.length} Legal Domains</div>
+                  <div className="am-domain-list">
+                    {categories.map(cat => (
+                      <button
+                        key={cat.id}
+                        className={`am-domain ${!query && activeCategory?.id === cat.id ? 'active' : ''}`}
+                        onClick={() => { setFilter(''); handleCategorySelect(cat); }}
+                      >
+                        <Icon name={CATEGORY_ICONS[cat.name] || 'file'} />
+                        <div style={{ minWidth: 0 }}>
+                          <div className="am-domain-name">{cat.name}</div>
+                          <div className="am-domain-desc">{(cat.document_types || []).slice(0, 3).map(d => d.name).join(', ')}</div>
+                        </div>
+                        <span className="am-domain-count">{String(cat.document_types?.length || 0).padStart(2, '0')}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="am-instruments">
+                  <div className="am-instruments-head">
+                    <div>
+                      <div className="am-eyebrow" style={{ color: 'var(--am-navy)', fontWeight: 500 }}>{query ? 'Search results' : 'Practice area'}</div>
+                      <h2 className="am-instruments-title">{query ? `“${filter}”` : activeCategory?.name}</h2>
+                    </div>
+                    <span className="am-group-note" style={{ fontSize: 14 }}>{visibleTypes.length} Instruments</span>
+                  </div>
+                  {visibleTypes.length === 0 ? (
+                    <div className="am-empty">No instruments match “{filter}”.</div>
+                  ) : (
+                    <div className="am-instrument-grid">
+                      {visibleTypes.map(dt => (
+                        <button
+                          key={`${dt._cat.id}-${dt.id}`}
+                          className="am-instrument"
+                          onClick={() => { setSelectedCategory(dt._cat); handleDocTypeSelect(dt); }}
+                        >
+                          <div className="am-instrument-top">
+                            <span className="am-instrument-name">{dt.name}</span>
+                            {query && <span className="am-badge">{dt._cat.name}</span>}
+                          </div>
+                          <div className="am-instrument-desc">{dt.description || `${dt._cat.name} instrument`}</div>
+                          <div className="am-instrument-foot"><span>Draft instrument</span><Icon name="arrowRight" size={15} /></div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* ── FREEFORM MODE UI ── */}
         {step === 1 && mode === 'freeform' && (
           <div className="freeform-wrap">
 
-            <div className="freeform-header">
-              <h2 className="freeform-title">✨ Freeform Document Generation</h2>
-              <p className="freeform-sub">
-                Describe your document in plain language. Upload reference files if needed.
-                AI will draft a complete, professional legal document.
-              </p>
-            </div>
 
             {/* Prompt */}
             <div className="freeform-card">
@@ -725,7 +868,7 @@ export default function Generate() {
                 rows={7}
               />
               <div className="freeform-prompt-hint">
-                💡 Be specific — mention party names, amounts, dates, jurisdiction, and any special clauses you need.
+                Be specific — mention party names, amounts, dates, jurisdiction, and any special clauses you need.
               </div>
             </div>
 
@@ -758,7 +901,7 @@ export default function Generate() {
                     e.target.value = '';
                   }}
                 />
-                <div className="freeform-dropzone-icon">📂</div>
+                <div className="freeform-dropzone-icon"></div>
                 <div className="freeform-dropzone-text">
                   Click to upload reference documents
                 </div>
@@ -771,7 +914,7 @@ export default function Generate() {
                 <div className="freeform-files-list">
                   {freeformFiles.map((file, i) => (
                     <div key={i} className="freeform-file-item">
-                      <span className="freeform-file-icon">📄</span>
+                      <span className="freeform-file-icon"></span>
                       <span className="freeform-file-name">{file.name}</span>
                       <span className="freeform-file-size">
                         {(file.size / 1024).toFixed(0)} KB
@@ -780,8 +923,7 @@ export default function Generate() {
                         className="freeform-file-remove"
                         onClick={() => setFreeformFiles(prev => prev.filter((_, idx) => idx !== i))}
                       >
-                        ✕
-                      </button>
+                                              </button>
                     </div>
                   ))}
                 </div>
@@ -792,7 +934,7 @@ export default function Generate() {
             <div className="freeform-card">
               <div className="freeform-settings-grid">
                 <div>
-                  <div className="freeform-section-label">🌐 Document Language</div>
+                  <div className="freeform-section-label">Document Language</div>
                   <select
                     className="language-select"
                     value={freeformLanguage}
@@ -808,14 +950,14 @@ export default function Generate() {
                   </select>
                 </div>
                 <div>
-                  <div className="freeform-section-label">📄 Document Length</div>
+                  <div className="freeform-section-label">Document Length</div>
                   <div className="length-options">
                     {[
-                      { value: 'short', label: 'Short', desc: '1-2 pages', icon: '📃' },
-                      { value: 'medium', label: 'Medium', desc: '3-4 pages', icon: '📄' },
-                      { value: 'detailed', label: 'Detailed', desc: '5-6 pages', icon: '📋' },
-                      { value: 'comprehensive', label: 'Comprehensive', desc: '8-10 pages', icon: '📚' },
-                      { value: 'custom', label: 'Custom', desc: 'Your choice', icon: '✏️' },
+                      { value: 'short', label: 'Short', desc: '1-2 pages', icon: '' },
+                      { value: 'medium', label: 'Medium', desc: '3-4 pages', icon: '' },
+                      { value: 'detailed', label: 'Detailed', desc: '5-6 pages', icon: '' },
+                      { value: 'comprehensive', label: 'Comprehensive', desc: '8-10 pages', icon: '' },
+                      { value: 'custom', label: 'Custom', desc: 'Your choice', icon: '' },
                     ].map(opt => (
                       <div
                         key={opt.value}
@@ -864,7 +1006,7 @@ export default function Generate() {
             <div className="freeform-card freeform-generate-card">
               <div className="freeform-credit-row">
                 <span className="freeform-credit-note">
-                  ⚡ This will use <strong>1 credit</strong>. You have <strong>{userProfile?.is_firm_member ? (firmCredits ?? '...') : (userProfile?.credits ?? 0)} credits</strong>.
+                  This will use <strong>1 credit</strong>. You have <strong>{userProfile?.is_firm_member ? (firmCredits ?? '...') : (userProfile?.credits ?? 0)} credits</strong>.
                 </span>
               </div>
               <button
@@ -880,195 +1022,10 @@ export default function Generate() {
                     {freeformLength === 'comprehensive' && '⏳ Generating (~2 min)...'}
                     {freeformLength === 'custom' && `⏳ Generating ${freeformCustomPages} pages...`}
                   </span>
-                ) : '✨ Generate Document (1 Credit)'}
+                ) : 'Generate Document (1 Credit)'}
               </button>
             </div>
 
-          </div>
-        )}
-
-        {/* Step 1: Categories */}
-        {step === 1 && mode === 'guided' && (
-          <div>
-            <h2>Select Legal Category</h2>
-            {categories.length === 0 ? (
-              <div className="empty-state">
-                <p>No categories found. Check if backend is running.</p>
-                <button className="btn-primary"
-                  style={{width:'auto', padding:'10px 20px'}}
-                  onClick={loadCategories}>
-                  Retry
-                </button>
-              </div>
-            ) : (
-              <div className="category-grid">
-                {categories.map(cat => (
-                  <div key={cat.id} className="category-card"
-                    onClick={() => handleCategorySelect(cat)}>
-                    <div className="category-icon">{cat.icon}</div>
-                    <div className="category-name">{cat.name}</div>
-                    <div className="category-count">
-                      {cat.document_types?.length || 0} document types
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Step 2: Document Types */}
-        {step === 2 && selectedCategory && (
-          <div>
-            <h2>{selectedCategory.icon} {selectedCategory.name}</h2>
-            <p style={{marginBottom:'16px', color:'#718096'}}>
-              Select the document you want to generate:
-            </p>
-            <div className="doctype-grid">
-              {selectedCategory.document_types?.map(dt => (
-                <div key={dt.id} className="doctype-card"
-                  onClick={() => handleDocTypeSelect(dt)}>
-                  <h3>{dt.name}</h3>
-                  <p>{dt.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Form */}
-        {step === 3 && selectedDocType && (
-          <div>
-            <h2>Fill Details: {selectedDocType.name}</h2>
-
-            {/* Document Length Selector */}
-            <div className="length-selector">
-              <label>📄 Document Length:</label>
-              <div className="length-options">
-                {[
-                  { value: 'short', label: 'Short', desc: '1-2 pages', icon: '📃' },
-                  { value: 'medium', label: 'Medium', desc: '3-4 pages', icon: '📄' },
-                  { value: 'detailed', label: 'Detailed', desc: '5-6 pages', icon: '📋' },
-                  { value: 'comprehensive', label: 'Comprehensive', desc: '8-10 pages', icon: '📚' },
-                  { value: 'custom', label: 'Custom', desc: 'Your choice', icon: '✏️' }
-                ].map(opt => (
-                  <div
-                    key={opt.value}
-                    className={`length-option ${documentLength === opt.value ? 'selected' : ''}`}
-                    onClick={() => setDocumentLength(opt.value)}>
-                    <span className="length-icon">{opt.icon}</span>
-                    <span className="length-label">{opt.label}</span>
-                    <span className="length-desc">{opt.desc}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Custom Pages Input */}
-              {documentLength === 'custom' && (
-                <div className="custom-pages-input">
-                  <label>Enter number of pages required:</label>
-                  <div className="custom-pages-controls">
-                    <button
-                      type="button"
-                      className="page-count-btn"
-                      onClick={() => setCustomPages(p => Math.max(1, p - 1))}>
-                      −
-                    </button>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={customPages}
-                      onChange={e => setCustomPages(
-                        Math.min(100, Math.max(1, parseInt(e.target.value) || 1))
-                      )}
-                      className="custom-pages-number"
-                    />
-                    <button
-                      type="button"
-                      className="page-count-btn"
-                      onClick={() => setCustomPages(p => Math.min(100, p + 1))}>
-                      +
-                    </button>
-                    <span className="pages-label">pages</span>
-                  </div>
-                  <p className="custom-pages-note">
-                    ⚡ More pages = more generation time. Max 100 pages.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="language-selector">
-              <label>🌐 Document Language:</label>
-              <select
-                value={selectedLanguage}
-                onChange={e => setSelectedLanguage(e.target.value)}
-                className="language-select">
-                <option value="English">🇬🇧 English</option>
-                <option value="Hindi">🇮🇳 Hindi</option>
-                <option value="Marathi">🇮🇳 Marathi</option>
-                <option value="Bengali">🇮🇳 Bengali</option>
-                <option value="Tamil">🇮🇳 Tamil</option>
-                <option value="Kannada">🇮🇳 Kannada</option>
-                <option value="Telugu">🇮🇳 Telugu</option>
-              </select>
-            </div>
-
-            <LegalSectionsAssistant
-              categoryName={selectedCategory?.name}
-              documentTypeName={selectedDocType?.name}
-              formData={formData}
-              selectedSections={selectedSections}
-              onAddSection={handleAddSection}
-              onRemoveSection={handleRemoveSection}
-              onAddAllSections={handleAddAllSections}
-            />
-
-            <p className="credit-notice">
-              ⚡ This will use 1 credit. You have {userProfile?.is_firm_member ? (firmCredits ?? '...') : (userProfile?.credits ?? 0)} credits.
-            </p>
-            <form onSubmit={handleGenerate} className="document-form">
-              {selectedDocType.fields?.map(field => (
-                <div key={field.id} className="form-group">
-                  <label>
-                    {field.label}
-                    {field.required && <span className="required"> *</span>}
-                  </label>
-                  {field.type === 'textarea' ? (
-                    <textarea
-                      value={formData[field.id] || ''}
-                      onChange={e => handleFormChange(field.id, e.target.value)}
-                      placeholder={`Enter ${field.label.toLowerCase()}`}
-                      required={field.required}
-                      rows={3}
-                    />
-                  ) : (
-                    <input
-                      type={field.type}
-                      value={formData[field.id] || ''}
-                      onChange={e => handleFormChange(field.id, e.target.value)}
-                      placeholder={`Enter ${field.label.toLowerCase()}`}
-                      required={field.required}
-                    />
-                  )}
-                </div>
-              ))}
-              <button
-                type="submit"
-                className="btn-primary btn-large"
-                disabled={loading || (userProfile?.is_firm_member ? (firmCredits !== null && firmCredits <= 0) : (userProfile?.credits ?? 0) <= 0)}>
-                {loading ? (
-                  <span>
-                    {documentLength === 'short' && '⏳ Generating (~10 sec)...'}
-                    {documentLength === 'medium' && '⏳ Generating (~20 sec)...'}
-                    {documentLength === 'detailed' && '⏳ Generating (~40 sec)...'}
-                    {documentLength === 'comprehensive' && '⏳ Generating (~90 sec)...'}
-                    {documentLength === 'custom' && `⏳ Generating ${customPages} pages (~${Math.ceil(customPages * 5)} sec)...`}
-                  </span>
-                ) : '✨ Generate Document (1 Credit)'}
-              </button>
-            </form>
           </div>
         )}
 
@@ -1076,19 +1033,19 @@ export default function Generate() {
         {step === 4 && (
           <div>
             <div className="result-header">
-              <h2>✅ {selectedDocType?.name} Generated!</h2>
+              <h2 className="am-studio-title">{selectedDocType?.name || 'Your instrument'} is ready</h2>
               <div style={{display:'flex', gap:'10px', flexWrap:'wrap'}}>
                 <button
                   className="btn-primary"
                   style={{width:'auto', padding:'10px 20px'}}
                   onClick={downloadPDF}>
-                  ⬇️ Download PDF
+                  Download PDF
                 </button>
                 <button
                   className="btn-outline"
                   style={{width:'auto', padding:'10px 20px'}}
                   onClick={downloadDOCX}>
-                  📝 Download Word
+                  Download Word
                 </button>
               </div>
             </div>
@@ -1163,7 +1120,7 @@ export default function Generate() {
             )}
 
             <div className="edit-section">
-              <h3>✏️ Edit Document</h3>
+              <h3>Edit Document</h3>
               <p className="edit-note">
                 Make changes below — page view updates automatically:
               </p>
@@ -1186,10 +1143,10 @@ export default function Generate() {
             {/* Share with Firm */}
             {userProfile?.is_firm_member && linkedDocId && (
               <div className="link-client-section">
-                <h3 className="link-client-title">🏛️ Share with Firm</h3>
+                <h3 className="link-client-title">Share with Firm</h3>
                 {sharedWithFirm ? (
                   <div className="link-client-success">
-                    ✅ Document shared with firm successfully
+                    Document shared with firm successfully
                   </div>
                 ) : (
                   <div className="link-client-row">
@@ -1213,7 +1170,7 @@ export default function Generate() {
                         setSharingDoc(false);
                       }}
                     >
-                      {sharingDoc ? 'Sharing...' : '🏛️ Share with Firm'}
+                      {sharingDoc ? 'Sharing...' : 'Share with Firm'}
                     </button>
                   </div>
                 )}
@@ -1222,10 +1179,10 @@ export default function Generate() {
 
             {/* Link to Client */}
             <div className="link-client-section">
-              <h3 className="link-client-title">👥 Link to Client</h3>
+              <h3 className="link-client-title">Link to Client</h3>
               {linkSuccess ? (
                 <div className="link-client-success">
-                  ✅ Document linked to client successfully
+                  Document linked to client successfully
                 </div>
               ) : (
                 <div className="link-client-row">
@@ -1259,7 +1216,7 @@ export default function Generate() {
                       setLinkingDoc(false);
                     }}
                   >
-                    {linkingDoc ? 'Linking...' : '🔗 Link'}
+                    {linkingDoc ? 'Linking...' : 'Link'}
                   </button>
                 </div>
               )}
@@ -1281,13 +1238,13 @@ export default function Generate() {
                 className="btn-primary"
                 style={{width:'auto', padding:'12px 24px'}}
                 onClick={downloadPDF}>
-                ⬇️ Download PDF
+                Download PDF
               </button>
               <button
                 className="btn-outline"
                 style={{width:'auto', padding:'12px 24px'}}
                 onClick={downloadDOCX}>
-                📝 Download Word
+                Download Word
               </button>
               <button
                 className="btn-outline"
@@ -1316,7 +1273,8 @@ export default function Generate() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+
+      </div>
+    </Layout>
   );
 }

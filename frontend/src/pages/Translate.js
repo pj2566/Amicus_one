@@ -15,6 +15,21 @@ const LANGUAGES = [
   { value: 'Tamil',   label: '🇮🇳 Tamil' },
   { value: 'Kannada', label: '🇮🇳 Kannada' },
   { value: 'Telugu',  label: '🇮🇳 Telugu' },
+  { value: 'Gujarati', label: '🇮🇳 Gujarati' },
+  { value: 'Malayalam', label: '🇮🇳 Malayalam' },
+  { value: 'Punjabi', label: '🇮🇳 Punjabi' },
+  { value: 'Odia',    label: '🇮🇳 Odia' },
+  { value: 'Urdu',    label: '🇮🇳 Urdu' },
+];
+
+const ACCEPTED_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'text/plain',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
 ];
 
 const cleanText = (text) =>
@@ -43,7 +58,11 @@ export default function Translate() {
 
   const [step, setStep] = useState(1); // 1=upload, 2=translating, 3=result
   const [selectedFile, setSelectedFile] = useState(null);
-  const [sourceLanguage, setSourceLanguage] = useState('Hindi');
+  const [language, setLanguage] = useState('Hindi');
+  const [direction, setDirection] = useState('to-english'); // or 'from-english'
+  const sourceLanguage = direction === 'to-english' ? language : 'English';
+  const targetLanguage = direction === 'to-english' ? 'English' : language;
+  const hasCredits = userProfile?.is_firm_member || (userProfile?.credits ?? 0) > 0;
   const [, setTranslatedText] = useState('');
   const [editedText, setEditedText] = useState('');
   const [pages, setPages] = useState([]);
@@ -55,14 +74,8 @@ export default function Translate() {
   // ── File handling ──────────────────────────────────────
   const handleFileSelect = (file) => {
     if (!file) return;
-    const allowed = [
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/msword',
-      'text/plain',
-    ];
-    if (!allowed.includes(file.type)) {
-      toast.error('Only PDF, DOCX, or TXT files are supported');
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error('Only PDF, DOCX, TXT or image (JPG, PNG) files are supported');
       return;
     }
     if (file.size > 25 * 1024 * 1024) {
@@ -83,7 +96,8 @@ export default function Translate() {
   // ── Translation ────────────────────────────────────────
   const handleTranslate = async () => {
     if (!selectedFile) { toast.error('Please select a file'); return; }
-    if (!userProfile || userProfile.credits <= 0) {
+    // Firm members draw from the firm pool; the server checks the actual balance
+    if (!hasCredits) {
       toast.error('No credits remaining. Please top up.');
       return;
     }
@@ -93,7 +107,7 @@ export default function Translate() {
 
     try {
       setProgress('Translating document — this may take a few minutes for large files...');
-      const res = await api.translateDocument(selectedFile, sourceLanguage);
+      const res = await api.translateDocument(selectedFile, sourceLanguage, targetLanguage);
       const translated = res.data.translatedText;
       const cleaned = cleanText(translated);
 
@@ -143,7 +157,7 @@ export default function Translate() {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(120, 120, 120);
-        doc.text(`Translated from ${sourceLanguage} to English`, marginLeft, pageHeight - 9);
+        doc.text(`Translated from ${sourceLanguage} to ${targetLanguage}`, marginLeft, pageHeight - 9);
         doc.text(`Page ${pn}`, pageWidth - marginRight, pageHeight - 9, { align: 'right' });
         doc.text(`${new Date().toLocaleDateString('en-IN')}`, pageWidth / 2, pageHeight - 9, { align: 'center' });
         doc.setTextColor(0, 0, 0);
@@ -171,7 +185,7 @@ export default function Translate() {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
-      doc.text(`Translated from ${sourceLanguage} to English — Lexora AI`, pageWidth / 2, y, { align: 'center' });
+      doc.text(`Translated from ${sourceLanguage} to ${targetLanguage} — Amicus One`, pageWidth / 2, y, { align: 'center' });
       y += 10;
 
       doc.setDrawColor(220, 220, 220);
@@ -218,12 +232,12 @@ export default function Translate() {
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(7.5);
       doc.setTextColor(100, 100, 100);
-      doc.text('This document was translated using Lexora AI. Please verify accuracy with a qualified legal professional.', marginLeft + 3, y + 6);
-      doc.text(`Original language: ${sourceLanguage} | Translated: ${new Date().toLocaleDateString('en-IN')}`, marginLeft + 3, y + 11);
+      doc.text('This document was translated using Amicus One. Please verify accuracy with a qualified legal professional.', marginLeft + 3, y + 6);
+      doc.text(`${sourceLanguage} → ${targetLanguage} | Translated: ${new Date().toLocaleDateString('en-IN')}`, marginLeft + 3, y + 11);
 
       addFooter(pageNum);
 
-      const outName = `${fileName.replace(/\.[^/.]+$/, '') || 'Translated'}_English_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.pdf`;
+      const outName = `${fileName.replace(/\.[^/.]+$/, '') || 'Translated'}_${targetLanguage}_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.pdf`;
       doc.save(outName);
       toast.success('PDF downloaded!');
     } catch (err) {
@@ -256,7 +270,7 @@ export default function Translate() {
           spacing: { after: 300 },
           children: [
             new TextRun({
-              text: `Translated from ${sourceLanguage} to English — Lexora AI`,
+              text: `Translated from ${sourceLanguage} to ${targetLanguage} — Amicus One`,
               color: '666666', size: 20,
             }),
           ],
@@ -309,7 +323,7 @@ export default function Translate() {
           spacing: { before: 300 },
           children: [
             new TextRun({
-              text: `This document was translated using Lexora AI from ${sourceLanguage} to English. Please verify with a legal professional.`,
+              text: `This document was translated using Amicus One from ${sourceLanguage} to ${targetLanguage}. Please verify with a legal professional.`,
               italics: true, color: '888888', size: 18,
             }),
           ],
@@ -324,7 +338,7 @@ export default function Translate() {
       });
 
       const blob = await Packer.toBlob(docx);
-      const outName = `${fileName.replace(/\.[^/.]+$/, '') || 'Translated'}_English_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.docx`;
+      const outName = `${fileName.replace(/\.[^/.]+$/, '') || 'Translated'}_${targetLanguage}_${new Date().toLocaleDateString('en-IN').replace(/\//g, '-')}.docx`;
       saveAs(blob, outName);
       toast.success('Word document downloaded!');
     } catch (err) {
@@ -362,7 +376,7 @@ export default function Translate() {
           <div>
             <h1 className="translate-title">🌐 Document Translator</h1>
             <p className="translate-subtitle">
-              Translate Indian language legal documents to English — with full context preserved across all pages.
+              Translate legal documents between English and Indian languages — with full context preserved across all pages. Scanned PDFs and photos are supported.
             </p>
           </div>
           <div className="translate-credit-badge">
@@ -373,13 +387,27 @@ export default function Translate() {
         {/* ── STEP 1: Upload ── */}
         {step === 1 && (
           <div className="translate-card">
-            <div className="translate-section-title">Step 1 — Select source language</div>
+            <div className="translate-section-title">Step 1 — Choose direction and language</div>
+            <div className="translate-lang-grid" style={{ marginBottom: '0.75rem' }}>
+              <button
+                className={`translate-lang-btn ${direction === 'to-english' ? 'active' : ''}`}
+                onClick={() => setDirection('to-english')}
+              >
+                {language} → English
+              </button>
+              <button
+                className={`translate-lang-btn ${direction === 'from-english' ? 'active' : ''}`}
+                onClick={() => setDirection('from-english')}
+              >
+                English → {language}
+              </button>
+            </div>
             <div className="translate-lang-grid">
               {LANGUAGES.map((lang) => (
                 <button
                   key={lang.value}
-                  className={`translate-lang-btn ${sourceLanguage === lang.value ? 'active' : ''}`}
-                  onClick={() => setSourceLanguage(lang.value)}
+                  className={`translate-lang-btn ${language === lang.value ? 'active' : ''}`}
+                  onClick={() => setLanguage(lang.value)}
                 >
                   {lang.label}
                 </button>
@@ -399,7 +427,7 @@ export default function Translate() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.docx,.doc,.txt"
+                accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png,.webp"
                 style={{ display: 'none' }}
                 onChange={(e) => handleFileSelect(e.target.files[0])}
               />
@@ -426,7 +454,7 @@ export default function Translate() {
                     Drag & drop or <span className="translate-dropzone-link">browse file</span>
                   </div>
                   <div className="translate-dropzone-hint">
-                    PDF, DOCX, TXT — up to 25MB (100+ pages supported)
+                    PDF (including scanned), DOCX, TXT or a photo — up to 25MB
                   </div>
                 </div>
               )}
@@ -440,9 +468,9 @@ export default function Translate() {
             <button
               className="translate-btn-primary"
               onClick={handleTranslate}
-              disabled={!selectedFile || (!userProfile?.is_firm_member && (userProfile?.credits ?? 0) <= 0)}
+              disabled={!selectedFile || !hasCredits}
             >
-              🌐 Translate to English (1 Credit)
+              🌐 Translate to {targetLanguage} (1 Credit)
             </button>
           </div>
         )}
@@ -471,13 +499,16 @@ export default function Translate() {
               <div>
                 <h2 className="translate-result-title">✅ Translation Complete!</h2>
                 <p className="translate-result-sub">
-                  {fileName} — translated from {sourceLanguage} to English
+                  {fileName} — translated from {sourceLanguage} to {targetLanguage}
                 </p>
               </div>
               <div className="translate-result-actions">
-                <button className="translate-btn-primary" onClick={downloadPDF}>
-                  ⬇️ Download PDF
-                </button>
+                {/* The PDF export's built-in fonts only cover Latin script; use Word for Indian scripts */}
+                {targetLanguage === 'English' && (
+                  <button className="translate-btn-primary" onClick={downloadPDF}>
+                    ⬇️ Download PDF
+                  </button>
+                )}
                 <button className="translate-btn-outline" onClick={downloadDOCX}>
                   📝 Download Word
                 </button>
@@ -524,7 +555,7 @@ export default function Translate() {
                 <div className="document-page" style={{ marginTop: '1rem' }}>
                   <div className="page-header-bar">
                     <span>{fileName}</span>
-                    <span>Page {currentPage} of {pages.length} — Translated from {sourceLanguage}</span>
+                    <span>Page {currentPage} of {pages.length} — {sourceLanguage} → {targetLanguage}</span>
                   </div>
                   <div className="page-content">
                     {(pages[currentPage - 1] || '').split('\n').map((line, i) => (
@@ -534,7 +565,7 @@ export default function Translate() {
                     ))}
                   </div>
                   <div className="page-footer-bar">
-                    <span>Lexora — AI Translated Document</span>
+                    <span>Amicus One — AI Translated Document</span>
                     <span>{currentPage}</span>
                   </div>
                 </div>

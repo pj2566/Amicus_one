@@ -39,7 +39,7 @@ export default function JoinFirm() {
       <div className="auth-card-new" style={{background: 'var(--bg-secondary)', borderColor: 'var(--border-color)'}}>
         <div className="auth-logo-wrap">
           <div className="auth-logo-icon">🏛️</div>
-          <h1 className="auth-brand">Lexora</h1>
+          <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">Join Your Law Firm</p>
         </div>
 

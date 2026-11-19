@@ -1,23 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 
-const ThemeContext = createContext();
+// The Amicus One design is a single light "white canvas" theme; dark mode was retired.
+const ThemeContext = createContext({ theme: 'light' });
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('legalai-theme') || 'light';
-  });
-
   useEffect(() => {
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('legalai-theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
+    document.body.setAttribute('data-theme', 'light');
+    try { localStorage.removeItem('legalai-theme'); } catch (e) { /* storage unavailable */ }
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: 'light' }}>
       {children}
     </ThemeContext.Provider>
   );

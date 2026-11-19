@@ -54,7 +54,7 @@ export default function EmailVerification() {
             </div>
             <div className="verify-step">
               <span className="verify-step-num">2</span>
-              <span>Find the email from Lexora</span>
+              <span>Find the email from Amicus One</span>
             </div>
             <div className="verify-step">
               <span className="verify-step-num">3</span>
