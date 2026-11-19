@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api';
@@ -51,13 +52,13 @@ export default function FirmDocuments() {
 
   const getCategoryIcon = (category) => {
     const icons = {
-      'Property Law': '🏠', 'Corporate Law': '🏢', 'Criminal Law': '⚖️',
-      'Employment Law': '💼', 'Taxation Law': '💰', 'Consumer Law': '🛒',
-      'Cyber Law': '💻', 'Startup Law': '🚀', 'Civil Litigation': '📋',
-      'Arbitration Law': '🤝', 'Intellectual Property Law': '💡',
-      'Divorce / Family Law': '👨‍👩‍👧', 'Freeform': '✨'
+      'Property Law': '', 'Corporate Law': '', 'Criminal Law': '',
+      'Employment Law': '', 'Taxation Law': '', 'Consumer Law': '',
+      'Cyber Law': '', 'Startup Law': '', 'Civil Litigation': '',
+      'Arbitration Law': '', 'Intellectual Property Law': '',
+      'Divorce / Family Law': '‍‍', 'Freeform': ''
     };
-    return icons[category] || '📄';
+    return icons[category] || '';
   };
 
   const filterDocs = (docs) => docs.filter(doc =>
@@ -82,7 +83,7 @@ export default function FirmDocuments() {
         jsPDFDoc.setFont('helvetica', 'bold');
         jsPDFDoc.setFontSize(11);
         jsPDFDoc.setTextColor(255, 255, 255);
-        jsPDFDoc.text('⚖ LEXORA — AI GENERATED DOCUMENT', marginLeft, 12);
+        jsPDFDoc.text('LEXORA — AI GENERATED DOCUMENT', marginLeft, 12);
         jsPDFDoc.setTextColor(0, 0, 0);
       };
 
@@ -169,7 +170,7 @@ export default function FirmDocuments() {
     docs.length === 0 ? (
       <div className="firm-empty">
         <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
-          {showSharedBy ? '📁' : '🔒'}
+          {showSharedBy ? <Icon name="archive" size={32} /> : <Icon name="lock" size={32} />}
         </div>
         <h3>{showSharedBy ? 'No shared documents yet' : 'No private documents'}</h3>
         <p>
@@ -244,14 +245,14 @@ export default function FirmDocuments() {
                           style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                           onClick={() => setViewDoc(doc)}
                         >
-                          👁 View
+                          View
                         </button>
                         <button
                           className="firm-btn-outline"
                           style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                           onClick={() => downloadPDF(doc)}
                         >
-                          ⬇️ PDF
+                          PDF
                         </button>
                       </>
                     )}
@@ -272,13 +273,13 @@ export default function FirmDocuments() {
         {/* Header */}
         <div className="firm-page-header">
           <div>
-            <h1 className="firm-page-title">📁 Documents</h1>
+            <h1 className="firm-page-title">Documents</h1>
             <p className="firm-page-sub">
               Shared firm documents and your private documents
             </p>
           </div>
           <button className="firm-btn-primary" onClick={() => navigate('/generate')}>
-            ✍️ Generate Document
+            Generate Document
           </button>
         </div>
 
@@ -286,7 +287,7 @@ export default function FirmDocuments() {
         <div className="firm-search-bar">
           <input
             type="text"
-            placeholder="🔍 Search documents..."
+            placeholder="Search documents..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="firm-search-input"
@@ -303,13 +304,13 @@ export default function FirmDocuments() {
             className={`firm-tab ${activeTab === 'shared' ? 'active' : ''}`}
             onClick={() => setActiveTab('shared')}
           >
-            🏛️ Shared with Firm ({sharedDocs.length})
+            Shared with Firm ({sharedDocs.length})
           </button>
           <button
             className={`firm-tab ${activeTab === 'private' ? 'active' : ''}`}
             onClick={() => setActiveTab('private')}
           >
-            🔒 My Private Documents ({privateDocs.length})
+            My Private Documents ({privateDocs.length})
           </button>
         </div>
 
@@ -346,14 +347,14 @@ export default function FirmDocuments() {
                   style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                   onClick={() => downloadPDF(viewDoc)}
                 >
-                  ⬇️ Download PDF
+                  Download PDF
                 </button>
                 <button
                   className="firm-btn-outline"
                   style={{ padding: '0.5rem 0.75rem', fontSize: '1rem' }}
                   onClick={() => setViewDoc(null)}
                 >
-                  ✕
+                  
                 </button>
               </div>
             </div>

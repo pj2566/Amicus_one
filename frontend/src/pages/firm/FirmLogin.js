@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../../components/Icon';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
@@ -55,7 +56,7 @@ export default function FirmLogin() {
   color: 'var(--text-primary)'
 }}>
         <div className="auth-logo-wrap">
-          <div className="auth-logo-icon">🏛️</div>
+          <div className="auth-logo-icon"><Icon name="building" /></div>
           <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">Law Firm Workspace</p>
         </div>
@@ -125,10 +126,10 @@ export default function FirmLogin() {
         </p>
 
         <div className="auth-features">
-          <div className="auth-feature-item">🏛️ Firm Dashboard</div>
-          <div className="auth-feature-item">👥 Team Management</div>
-          <div className="auth-feature-item">📁 Shared Documents</div>
-          <div className="auth-feature-item">📊 Firm Analytics</div>
+          <div className="auth-feature-item">Firm Dashboard</div>
+          <div className="auth-feature-item">Team Management</div>
+          <div className="auth-feature-item">Shared Documents</div>
+          <div className="auth-feature-item">Firm Analytics</div>
         </div>
       </div>
 
@@ -137,7 +138,7 @@ export default function FirmLogin() {
         <div className="modal-overlay" onClick={() => setForgotMode(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <div className="modal-header">
-              <h3 className="modal-title">🔐 Reset Password</h3>
+              <h3 className="modal-title">Reset Password</h3>
               <button className="modal-close" onClick={() => setForgotMode(false)}>×</button>
             </div>
             <form onSubmit={handleForgotPassword} style={{ padding: '1.5rem' }}>

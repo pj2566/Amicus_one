@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import Layout from '../components/Layout';
@@ -161,24 +162,24 @@ export default function AdminPanel() {
     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
       <button
         className="btn-small"
-        style={{ background: '#6366f1' }}
+        style={{ background: '#1E3A8A' }}
         onClick={() => { setResetModal({ userId: user.id, name: user.name || user.email }); setResetPassword(''); }}
       >
-        🔑
+        
       </button>
       <button
         className="btn-small"
         style={{ background: '#f59e0b' }}
         onClick={() => handleBanUser(user.id, user.name || user.email)}
       >
-        🚫
+        
       </button>
       <button
         className="btn-small"
         style={{ background: '#ef4444' }}
         onClick={() => handleDeleteUser(user.id, user.name || user.email)}
       >
-        🗑️
+        
       </button>
     </div>
   );
@@ -190,7 +191,7 @@ export default function AdminPanel() {
         {/* Header */}
         <div className="page-header">
           <div>
-            <h1 className="page-title">👑 Admin Panel</h1>
+            <h1 className="page-title">Admin Panel</h1>
             <p className="page-subtitle">Full platform control — users, firms, credits, and more</p>
           </div>
           <button className="dash-action-btn secondary" onClick={() => navigate('/dashboard')}>
@@ -201,13 +202,13 @@ export default function AdminPanel() {
         {/* Stats */}
         <div className="dashboard-stats" style={{ marginBottom: '2rem' }}>
           {[
-            { icon: '👥', value: stats.totalUsers || 0, label: 'Total Users' },
-            { icon: '🏛️', value: stats.totalFirms || 0, label: 'Law Firms' },
-            { icon: '📄', value: stats.totalDocuments || 0, label: 'Documents' },
-            { icon: '🌐', value: stats.totalTranslations || 0, label: 'Translations' },
+            { icon: 'users', value: stats.totalUsers || 0, label: 'Total Users' },
+            { icon: 'building', value: stats.totalFirms || 0, label: 'Law Firms' },
+            { icon: 'file', value: stats.totalDocuments || 0, label: 'Documents' },
+            { icon: 'languages', value: stats.totalTranslations || 0, label: 'Translations' },
           ].map((s) => (
             <div key={s.label} className="dash-stat-card">
-              <div className="dash-stat-icon">{s.icon}</div>
+              <div className="dash-stat-icon"><Icon name={s.icon} /></div>
               <div className="dash-stat-content">
                 <div className="dash-stat-number">{s.value}</div>
                 <div className="dash-stat-label">{s.label}</div>
@@ -219,13 +220,13 @@ export default function AdminPanel() {
         {/* Tabs */}
         <div className="firm-tabs" style={{ marginBottom: '1.5rem' }}>
           <button className={`firm-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
-            👤 Individual Lawyers ({users.filter(u => !u.is_firm_member).length})
+            Individual Lawyers ({users.filter(u => !u.is_firm_member).length})
           </button>
           <button className={`firm-tab ${activeTab === 'firms' ? 'active' : ''}`} onClick={() => setActiveTab('firms')}>
-            🏛️ Law Firms ({firms.length})
+            Law Firms ({firms.length})
           </button>
           <button className={`firm-tab ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>
-            📋 All Users ({users.length})
+            All Users ({users.length})
           </button>
         </div>
 
@@ -235,7 +236,7 @@ export default function AdminPanel() {
             <div className="firm-search-bar" style={{ marginBottom: '1rem' }}>
               <input
                 type="text"
-                placeholder="🔍 Search by name or email..."
+                placeholder="Search by name or email..."
                 value={searchUser}
                 onChange={e => setSearchUser(e.target.value)}
                 className="firm-search-input"
@@ -293,7 +294,7 @@ export default function AdminPanel() {
             <div className="firm-search-bar" style={{ marginBottom: '1rem' }}>
               <input
                 type="text"
-                placeholder="🔍 Search firms..."
+                placeholder="Search firms..."
                 value={searchFirm}
                 onChange={e => setSearchFirm(e.target.value)}
                 className="firm-search-input"
@@ -323,7 +324,7 @@ export default function AdminPanel() {
                       <td>{firm.member_count || 0}</td>
                       <td>{firm.doc_count || 0}</td>
                       <td>
-                        <strong style={{ color: 'var(--accent)' }}>🪙 {firm.total_credits}</strong>
+                        <strong style={{ color: 'var(--accent)' }}>{firm.total_credits}</strong>
                       </td>
                       <td>
                         <div className="credit-add-row">
@@ -348,17 +349,17 @@ export default function AdminPanel() {
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <button
                             className="btn-small"
-                            style={{ background: '#6366f1' }}
+                            style={{ background: '#1E3A8A' }}
                             onClick={() => handleViewFirmMembers(firm)}
                           >
-                            👥 Members
+                            Members
                           </button>
                           <button
                             className="btn-small"
                             style={{ background: '#ef4444' }}
                             onClick={() => handleDeleteFirm(firm.id, firm.firm_name)}
                           >
-                            🗑️ Delete
+                            Delete
                           </button>
                         </div>
                       </td>
@@ -376,7 +377,7 @@ export default function AdminPanel() {
             <div className="firm-search-bar" style={{ marginBottom: '1rem' }}>
               <input
                 type="text"
-                placeholder="🔍 Search by name or email..."
+                placeholder="Search by name or email..."
                 value={searchUser}
                 onChange={e => setSearchUser(e.target.value)}
                 className="firm-search-input"
@@ -405,9 +406,9 @@ export default function AdminPanel() {
                         <span style={{
                           padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 600,
                           background: user.is_firm_member ? 'rgba(201,168,76,0.15)' : 'rgba(99,102,241,0.12)',
-                          color: user.is_firm_member ? '#b8860b' : '#6366f1'
+                          color: user.is_firm_member ? '#92400E' : '#1E3A8A'
                         }}>
-                          {user.is_firm_member ? `🏛️ ${user.firm_role === 'admin' ? 'Firm Admin' : 'Firm Member'}` : '👤 Lawyer'}
+                          {user.is_firm_member ? `${user.firm_role === 'admin' ? 'Firm Admin' : 'Firm Member'}` : 'Lawyer'}
                         </span>
                       </td>
                       <td><strong>{user.credits}</strong></td>
@@ -427,7 +428,7 @@ export default function AdminPanel() {
       {resetModal && (
         <div className="firm-modal-overlay" onClick={() => setResetModal(null)}>
           <div className="firm-modal" onClick={e => e.stopPropagation()}>
-            <h3 className="firm-modal-title">🔑 Reset Password — {resetModal.name}</h3>
+            <h3 className="firm-modal-title">Reset Password — {resetModal.name}</h3>
             <div className="firm-form-field">
               <label>New Password</label>
               <input
@@ -455,13 +456,13 @@ export default function AdminPanel() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <div>
                 <h3 className="firm-modal-title" style={{ margin: 0 }}>
-                  👥 {firmMembersModal.firm_name}
+                  {firmMembersModal.firm_name}
                 </h3>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  🪙 Firm Pool Credits: <strong>{firmMembersModal.total_credits}</strong>
+                  Firm Pool Credits: <strong>{firmMembersModal.total_credits}</strong>
                 </p>
               </div>
-              <button className="firm-btn-outline" onClick={() => setFirmMembersModal(null)}>✕</button>
+              <button className="firm-btn-outline" onClick={() => setFirmMembersModal(null)}></button>
             </div>
 
             {firmMembersLoading ? (
@@ -487,7 +488,7 @@ export default function AdminPanel() {
                         <td style={{ fontSize: '0.82rem' }}>{member.email}</td>
                         <td>
                           <span className={`firm-role-badge ${member.firm_role}`}>
-                            {member.firm_role === 'admin' ? '👑 Admin' : '👤 Member'}
+                            {member.firm_role === 'admin' ? 'Admin' : 'Member'}
                           </span>
                         </td>
                         <td>{member.documents_generated || 0}</td>
@@ -495,21 +496,21 @@ export default function AdminPanel() {
                           <div style={{ display: 'flex', gap: '0.4rem' }}>
                             <button
                               className="btn-small"
-                              style={{ background: '#6366f1' }}
+                              style={{ background: '#1E3A8A' }}
                               onClick={() => {
                                 setFirmMembersModal(null);
                                 setResetModal({ userId: member.id, name: member.name || member.email });
                                 setResetPassword('');
                               }}
                             >
-                              🔑 Reset
+                              Reset
                             </button>
                             <button
                               className="btn-small"
                               style={{ background: '#ef4444' }}
                               onClick={() => handleDeleteUser(member.id, member.name || member.email)}
                             >
-                              🗑️ Delete
+                              Delete
                             </button>
                           </div>
                         </td>

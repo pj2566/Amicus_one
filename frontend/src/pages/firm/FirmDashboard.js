@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api';
@@ -45,7 +46,7 @@ export default function FirmDashboard() {
         {/* Header */}
         <div className="firm-page-header">
           <div>
-            <h1 className="firm-page-title">🏛️ Firm Dashboard</h1>
+            <h1 className="firm-page-title">Firm Dashboard</h1>
             <p className="firm-page-sub">
               Welcome back, {userProfile?.name || 'Admin'} — manage your firm workspace
             </p>
@@ -54,7 +55,7 @@ export default function FirmDashboard() {
             className="firm-btn-primary"
             onClick={() => navigate('/generate')}
           >
-            ✍️ New Document
+            New Document
           </button>
         </div>
 
@@ -65,27 +66,27 @@ export default function FirmDashboard() {
           <>
             <div className="firm-stats-grid">
               <div className="firm-stat-card">
-                <div className="firm-stat-icon">🪙</div>
+                <div className="firm-stat-icon"><Icon name="card" /></div>
                 <div className="firm-stat-val">{stats?.totalCredits ?? 0}</div>
                 <div className="firm-stat-label">Firm Credits</div>
               </div>
               <div className="firm-stat-card">
-                <div className="firm-stat-icon">👥</div>
+                <div className="firm-stat-icon"><Icon name="users" /></div>
                 <div className="firm-stat-val">{stats?.membersCount ?? 0}</div>
                 <div className="firm-stat-label">Team Members</div>
               </div>
               <div className="firm-stat-card">
-                <div className="firm-stat-icon">📄</div>
+                <div className="firm-stat-icon"><Icon name="file" /></div>
                 <div className="firm-stat-val">{stats?.docsCount ?? 0}</div>
                 <div className="firm-stat-label">Total Documents</div>
               </div>
               <div className="firm-stat-card">
-                <div className="firm-stat-icon">📁</div>
+                <div className="firm-stat-icon"><Icon name="archive" /></div>
                 <div className="firm-stat-val">{stats?.sharedDocsCount ?? 0}</div>
                 <div className="firm-stat-label">Shared Documents</div>
               </div>
               <div className="firm-stat-card">
-                <div className="firm-stat-icon">📨</div>
+                <div className="firm-stat-icon"><Icon name="file" /></div>
                 <div className="firm-stat-val">{stats?.pendingInvites ?? 0}</div>
                 <div className="firm-stat-label">Pending Invites</div>
               </div>
@@ -96,13 +97,13 @@ export default function FirmDashboard() {
               <h2 className="firm-section-title">Quick Actions</h2>
               <div className="firm-actions-grid">
                 {[
-                  { icon: '👥', label: 'Manage Members', desc: 'Add, remove, reset passwords', action: () => navigate('/firm/members') },
-                  { icon: '📁', label: 'Shared Documents', desc: 'View firm document library', action: () => navigate('/firm/documents') },
-                  { icon: '✍️', label: 'Generate Document', desc: 'Create a new legal document', action: () => navigate('/generate') },
-                  { icon: '⚖️', label: 'LawGPT Research', desc: 'AI legal research assistant', action: () => navigate('/lawgpt') },
+                  { icon: 'users', label: 'Manage Members', desc: 'Add, remove, reset passwords', action: () => navigate('/firm/members') },
+                  { icon: 'archive', label: 'Shared Documents', desc: 'View firm document library', action: () => navigate('/firm/documents') },
+                  { icon: 'pen', label: 'Drafting Studio', desc: 'Prepare a new legal instrument', action: () => navigate('/generate') },
+                  { icon: 'book', label: 'Legal Research', desc: 'BNS, BNSS & BSA with verified citations', action: () => navigate('/lawgpt') },
                 ].map((item) => (
                   <div key={item.label} className="firm-action-card" onClick={item.action}>
-                    <div className="firm-action-icon">{item.icon}</div>
+                    <div className="firm-action-icon"><Icon name={item.icon} /></div>
                     <div className="firm-action-title">{item.label}</div>
                     <div className="firm-action-desc">{item.desc}</div>
                   </div>
@@ -153,11 +154,11 @@ export default function FirmDashboard() {
                         <td>{m.email}</td>
                         <td>
                           <span className={`firm-role-badge ${m.firm_role}`}>
-                            {m.firm_role === 'admin' ? '👑 Admin' : '👤 Member'}
+                            {m.firm_role === 'admin' ? 'Admin' : 'Member'}
                           </span>
                         </td>
-                        <td>🪙 {m.credits}</td>
-                        <td>📄 {m.documents_generated || 0}</td>
+                        <td>{m.credits}</td>
+                        <td>{m.documents_generated || 0}</td>
                         <td>{formatDate(m.created_at)}</td>
                       </tr>
                     ))}

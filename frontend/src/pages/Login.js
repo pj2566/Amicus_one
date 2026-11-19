@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -56,14 +57,14 @@ export default function Login() {
       <div className="auth-page">
         <div className="auth-card-new" data-theme="light">
           <div className="auth-logo-wrap">
-            <div className="auth-logo-icon">🔑</div>
+            <div className="auth-logo-icon"><Icon name="lock" /></div>
             <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">Reset your password</p>
           </div>
 
           {forgotSent ? (
             <div className="forgot-sent-wrap">
-              <div className="forgot-sent-icon">✅</div>
+              <div className="forgot-sent-icon"><Icon name="checkCircle" /></div>
               <h3 className="forgot-sent-title">Reset link sent!</h3>
               <p className="forgot-sent-desc">
                 Check your email inbox for the password reset link.
@@ -105,7 +106,7 @@ export default function Login() {
                 className="auth-submit-btn"
                 disabled={forgotLoading}
               >
-                {forgotLoading ? '⏳ Sending...' : '📧 Send Reset Link →'}
+                {forgotLoading ? '⏳ Sending...' : 'Send Reset Link →'}
               </button>
 
               <button
@@ -129,9 +130,9 @@ export default function Login() {
 
         {/* Logo */}
         <div className="auth-logo-wrap">
-          <div className="auth-logo-icon">⚖️</div>
+          <div className="auth-logo-icon"><Icon name="scale" /></div>
           <h1 className="auth-brand">Amicus One</h1>
-          <p className="auth-tagline">The Modern AI Workspace for Legal Professionals</p>
+          <p className="auth-tagline">Chambers workspace for Indian advocates</p>
         </div>
 
         {/* Form */}
@@ -193,10 +194,10 @@ export default function Login() {
 
         {/* Features */}
         <div className="auth-features">
-          <div className="auth-feature-item">✍️ AI Document Drafting</div>
-          <div className="auth-feature-item">⚖️ LawGPT Research</div>
-          <div className="auth-feature-item">🌐 Document Translator</div>
-          <div className="auth-feature-item">📄 80+ Document Types</div>
+          <div className="auth-feature-item">Guided Drafting</div>
+          <div className="auth-feature-item">Statutory Research</div>
+          <div className="auth-feature-item">Vernacular Translation</div>
+          <div className="auth-feature-item">64 Standard Instruments</div>
         </div>
 
       </div>

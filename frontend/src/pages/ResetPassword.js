@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
@@ -51,7 +52,7 @@ export default function ResetPassword() {
     <div className="auth-page">
       <div className="auth-card-new" data-theme="light">
         <div className="auth-logo-wrap">
-          <div className="auth-logo-icon">🔐</div>
+          <div className="auth-logo-icon"><Icon name="lock" /></div>
           <h1 className="auth-brand">Reset Password</h1>
           <p className="auth-tagline">Enter your new password below</p>
         </div>
@@ -86,7 +87,7 @@ export default function ResetPassword() {
             className="auth-submit-btn"
             disabled={loading}
           >
-            {loading ? '⏳ Updating...' : '🔐 Update Password →'}
+            {loading ? '⏳ Updating...' : 'Update Password →'}
           </button>
         </form>
       </div>

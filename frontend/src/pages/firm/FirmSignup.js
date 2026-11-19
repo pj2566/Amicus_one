@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../../components/Icon';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import toast from 'react-hot-toast';
@@ -40,14 +41,14 @@ export default function FirmSignup() {
     <div className="auth-page">
       <div className="auth-card-new" style={{background: 'var(--bg-secondary)', borderColor: 'var(--border-color)'}}>
         <div className="auth-logo-wrap">
-          <div className="auth-logo-icon">🏛️</div>
+          <div className="auth-logo-icon"><Icon name="building" /></div>
           <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">Register Your Law Firm</p>
         </div>
 
         {registered ? (
           <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
+            <div style={{ marginBottom: '1rem', color: 'var(--am-green)' }}><Icon name="checkCircle" size={40} /></div>
             <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Firm Registered!</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.95rem' }}>
               A verification email has been sent to <strong>{form.email}</strong>
@@ -67,7 +68,7 @@ export default function FirmSignup() {
           <h2 className="auth-form-title">Create firm account</h2>
 
           <div className="auth-free-badge">
-            🎉 10 free credits included on signup
+            10 free credits included on signup
           </div>
 
           <div className="auth-field">
@@ -165,10 +166,10 @@ export default function FirmSignup() {
         )}
 
         <div className="auth-features">
-          <div className="auth-feature-item">🏛️ Firm Dashboard</div>
-          <div className="auth-feature-item">👥 Team Management</div>
-          <div className="auth-feature-item">📁 Shared Documents</div>
-          <div className="auth-feature-item">📊 Firm Analytics</div>
+          <div className="auth-feature-item">Firm Dashboard</div>
+          <div className="auth-feature-item">Team Management</div>
+          <div className="auth-feature-item">Shared Documents</div>
+          <div className="auth-feature-item">Firm Analytics</div>
         </div>
       </div>
     </div>

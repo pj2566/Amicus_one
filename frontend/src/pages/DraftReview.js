@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import Layout from '../components/Layout';
@@ -13,7 +14,7 @@ const ACCEPTED_TYPES = [
 
 const FILE_LABELS = ['Draft 1', 'Draft 2', 'Draft 3', 'Draft 4', 'Draft 5'];
 
-const COLORS = ['#c9a84c', '#4c9ac9', '#4cc97a', '#c94c8a', '#9a4cc9'];
+const COLORS = ['#1E3A8A', '#92400E', '#166534', '#7F1D1D', '#475569'];
 
 export default function DraftReview() {
   const { userProfile } = useAuth();
@@ -87,10 +88,10 @@ export default function DraftReview() {
   };
 
   const getFileIcon = (type) => {
-    if (type === 'application/pdf') return '📄';
-    if (type.includes('word')) return '📝';
-    if (type === 'text/plain') return '📃';
-    return '📎';
+    if (type === 'application/pdf') return '';
+    if (type.includes('word')) return '';
+    if (type === 'text/plain') return '';
+    return '';
   };
 
   const formatAnalysis = (text) => {
@@ -112,14 +113,14 @@ export default function DraftReview() {
         {/* Header */}
         <div className="page-header">
           <div>
-            <h1 className="page-title">⚖️ Draft Review AI</h1>
+            <h1 className="page-title">Draft Review AI</h1>
             <p className="page-subtitle">
               Upload 2–5 drafts of the same document. AI will compare them in detail and recommend the strongest draft.
             </p>
           </div>
           {analysis && (
             <button className="dash-action-btn secondary" onClick={handleReset}>
-              🔄 Start New Review
+              Start New Review
             </button>
           )}
         </div>
@@ -158,7 +159,7 @@ export default function DraftReview() {
               />
               <div className="translate-dropzone-inner">
                 <div className="translate-dropzone-icon">
-                  {files.length >= 5 ? '✅' : '📂'}
+                  {files.length >= 5 ? <Icon name="checkCircle" size={28} /> : <Icon name="upload" size={28} />}
                 </div>
                 <div className="translate-dropzone-text">
                   {files.length >= 5
@@ -243,7 +244,7 @@ export default function DraftReview() {
 
             {/* Info notice */}
             <div className="translate-notice" style={{ marginTop: '1rem' }}>
-              🔍 AI will compare all drafts section-by-section, identify weak clauses, risky wording, missing protections, and recommend the strongest draft. Free — no credits deducted.
+              AI will compare all drafts section-by-section, identify weak clauses, risky wording, missing protections, and recommend the strongest draft. Free — no credits deducted.
             </div>
 
             {/* Analyse Button */}
@@ -257,7 +258,7 @@ export default function DraftReview() {
                 ? '⏳ Analysing drafts...'
                 : files.length < 2
                 ? `Upload ${2 - files.length} more draft${2 - files.length > 1 ? 's' : ''} to begin`
-                : `⚖️ Compare ${files.length} Drafts`
+                : `Compare ${files.length} Drafts`
               }
             </button>
           </div>
@@ -347,7 +348,7 @@ export default function DraftReview() {
                   color: 'var(--text-primary)',
                   margin: 0
                 }}>
-                  📊 Comparative Legal Analysis
+                  Comparative Legal Analysis
                 </h2>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button
@@ -363,10 +364,10 @@ export default function DraftReview() {
                       toast.success('Report downloaded');
                     }}
                   >
-                    ⬇️ Download Report
+                    Download Report
                   </button>
                   <button className="translate-btn-ghost" onClick={handleReset}>
-                    🔄 New Review
+                    New Review
                   </button>
                 </div>
               </div>
@@ -391,7 +392,7 @@ export default function DraftReview() {
         .analysis-h3 {
           font-size: 1.05rem;
           font-weight: 700;
-          color: var(--gold, #c9a84c);
+          color: var(--gold, #1E3A8A);
           margin: 1.5rem 0 0.5rem 0;
           padding-bottom: 0.3rem;
           border-bottom: 1px solid var(--border-color);

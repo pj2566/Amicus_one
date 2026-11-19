@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import toast from 'react-hot-toast';
@@ -33,13 +34,13 @@ export default function EmailVerification() {
     <div className="auth-page">
       <div className="auth-card-new" data-theme="light">
         <div className="auth-logo-wrap">
-          <div className="auth-logo-icon">📧</div>
+          <div className="auth-logo-icon"><Icon name="message" /></div>
           <h1 className="auth-brand">Check Your Email</h1>
           <p className="auth-tagline">Almost there — one step left</p>
         </div>
 
         <div className="verify-content">
-          <div className="verify-icon-wrap">✉️</div>
+          <div className="verify-icon-wrap"><Icon name="message" /></div>
           <h2 className="verify-title">Verify your email address</h2>
           <p className="verify-desc">
             We sent a verification link to{' '}
@@ -68,7 +69,7 @@ export default function EmailVerification() {
             disabled={resending}
             style={{ marginTop: '8px' }}
           >
-            {resending ? '⏳ Sending...' : '🔄 Resend Verification Email'}
+            {resending ? '⏳ Sending...' : 'Resend Verification Email'}
           </button>
 
           <div className="verify-note">

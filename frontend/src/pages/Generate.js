@@ -205,7 +205,7 @@ export default function Generate() {
       setLinkSuccess(false);
       setSharedWithFirm(false);
       await refreshProfile();
-      toast.success('Document generated successfully! 🎉');
+      toast.success('Document generated successfully! ');
       setStep(4);
     } catch (err) {
       console.error('Generate error:', err);
@@ -261,7 +261,7 @@ export default function Generate() {
       setLinkSuccess(false);
       setSharedWithFirm(false);
       await refreshProfile();
-      toast.success('Document generated successfully! 🎉');
+      toast.success('Document generated successfully! ');
       setStep(4);
     } catch (err) {
       console.error('Freeform error:', err);
@@ -940,13 +940,13 @@ export default function Generate() {
                     value={freeformLanguage}
                     onChange={e => setFreeformLanguage(e.target.value)}
                   >
-                    <option value="English">🇬🇧 English</option>
-                    <option value="Hindi">🇮🇳 Hindi</option>
-                    <option value="Marathi">🇮🇳 Marathi</option>
-                    <option value="Bengali">🇮🇳 Bengali</option>
-                    <option value="Tamil">🇮🇳 Tamil</option>
-                    <option value="Kannada">🇮🇳 Kannada</option>
-                    <option value="Telugu">🇮🇳 Telugu</option>
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Marathi">Marathi</option>
+                    <option value="Bengali">Bengali</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Kannada">Kannada</option>
+                    <option value="Telugu">Telugu</option>
                   </select>
                 </div>
                 <div>
@@ -964,7 +964,6 @@ export default function Generate() {
                         className={`length-option ${freeformLength === opt.value ? 'selected' : ''}`}
                         onClick={() => setFreeformLength(opt.value)}
                       >
-                        <span className="length-icon">{opt.icon}</span>
                         <span className="length-label">{opt.label}</span>
                         <span className="length-desc">{opt.desc}</span>
                       </div>

@@ -1,418 +1,173 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icon from '../components/Icon';
+
+const WORKFLOWS = [
+  { icon: 'file', title: 'Guided Legal Drafting', text: 'Pick from 64 standard Indian instruments across 12 practice areas. Fill the particulars and watch the A4 engrossment assemble beside the form, then generate the complete instrument.' },
+  { icon: 'search', title: 'Statutory Research', text: 'Ask about the BNS, BNSS or BSA. Answers are drawn from the official Gazette text, every section cited is checked, and old IPC/CrPC equivalents are noted.' },
+  { icon: 'swap', title: 'Courtroom Translation', text: 'Translate deeds, notices and orders between English and Hindi, Marathi, Bengali, Tamil and seven more Indian languages — scanned PDFs and photos included.' },
+  { icon: 'clipboard', title: 'Comparative Draft Audit', text: 'Upload up to five versions of an agreement. Clause-by-clause comparison, missing protections and risk, with every quotation traced back to the drafts.' },
+];
+
+const TRUST = [
+  { icon: 'book', title: 'Official statutory text', text: 'All 1,059 sections of the BNS, BNSS and BSA as published in the Gazette of India — not summaries.' },
+  { icon: 'checkCircle', title: 'Every citation verified', text: 'Section and sub-section numbers in each answer are checked against that text before you see them.' },
+  { icon: 'shield', title: 'No invented case law', text: 'Research answers never cite judgments, so there are no fabricated case names or citations to catch.' },
+  { icon: 'scale', title: 'Old and new law by date', text: 'Offences before 1 July 2024 are treated under the IPC, later ones under the BNS, with the savings provisions applied.' },
+];
+
+const PLANS = [
+  { plan: 'Free', price: '₹0', period: '/month', credits: '3 documents/month', features: ['Guided drafting', 'Statutory research', 'PDF & Word download', 'Basic support'], cta: 'Get Started Free', highlight: false },
+  { plan: 'Starter', price: '₹299', period: '/month', credits: '20 documents/month', features: ['Everything in Free', 'Priority generation', 'Document history', 'Email support'], cta: 'Coming Soon', highlight: true },
+  { plan: 'Pro', price: '₹699', period: '/month', credits: 'Unlimited documents', features: ['Everything in Starter', 'Client directory', 'Multi-language drafts', 'Priority support'], cta: 'Coming Soon', highlight: false },
+];
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const heroRef = useRef(null);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  // Intersection Observer for fade-in animations
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('lp-visible');
-          }
-        });
-      },
-      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
-    );
-    document.querySelectorAll('.lp-animate').forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  const signup = () => navigate('/auth?mode=signup');
 
   return (
-    <div className="lp-root">
-
-      {/* ── NAVBAR ── */}
-      <nav className={`lp-nav ${scrolled ? 'lp-nav-scrolled' : ''}`}>
-        <div className="lp-nav-inner">
-          <div className="lp-logo" onClick={() => navigate('/')}>
-            Lex<span>ora</span>
-          </div>
-          <div className={`lp-nav-links ${menuOpen ? 'lp-nav-open' : ''}`}>
-            <a href="#features" onClick={() => setMenuOpen(false)}>Features</a>
-            <a href="#workspace" onClick={() => setMenuOpen(false)}>Workspace</a>
-            <a href="#howitworks" onClick={() => setMenuOpen(false)}>How it Works</a>
-            <a href="#pricing-placeholder" onClick={() => setMenuOpen(false)}>Pricing</a>
-          </div>
-          <div className="lp-nav-right">
-            <button className="lp-btn-ghost" onClick={() => navigate('/auth?mode=login')}>Log in</button>
-            <button className="lp-btn-primary" onClick={() => navigate('/auth?mode=signup')}>Get Started</button>
-          </div>
-          <button className="lp-hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
-            <span></span><span></span><span></span>
+    <div className="am-landing">
+      {/* Nav */}
+      <header className="am-lp-nav">
+        <div className="am-lp-wrap am-lp-nav-inner">
+          <button className="am-lp-brand" onClick={() => navigate('/')}>
+            <span className="am-brand-mark"><Icon name="scale" size={17} /></span>
+            <span className="am-brand-name">Amicus One</span>
           </button>
+          <nav className="am-lp-links">
+            <a href="#workflows">Workflows</a>
+            <a href="#trust">Why it is reliable</a>
+            <a href="#pricing">Pricing</a>
+          </nav>
+          <div className="am-lp-actions">
+            <button className="am-btn" onClick={() => navigate('/auth?mode=login')}>Log in</button>
+            <button className="am-btn am-btn-primary" onClick={signup}>Get started</button>
+          </div>
         </div>
-      </nav>
+      </header>
 
-      {/* ── HERO ── */}
-      <section className="lp-hero" ref={heroRef}>
-        <div className="lp-hero-glow"></div>
-        <div className="lp-hero-glow2"></div>
-
-        <div className="lp-badge">
-          <span className="lp-badge-dot"></span>
-          AI-Powered Legal Intelligence for India
-        </div>
-
-        <h1 className="lp-hero-title">
-          The Modern <span className="lp-gradient-text">AI Workspace</span>
-          <br />for Legal Professionals
-        </h1>
-
-        <p className="lp-hero-sub">
-          Draft legal documents, research case law, manage clients, and work smarter —
-          all powered by AI built specifically for Indian law.
+      {/* Hero */}
+      <section className="am-lp-hero am-lp-wrap">
+        <div className="am-eyebrow">For Indian advocates & chambers</div>
+        <h1 className="am-lp-title">A chambers desk for drafting, statutory research and translation.</h1>
+        <p className="am-lp-lede">
+          Amicus One prepares standard Indian instruments, answers questions from the official text of the
+          BNS, BNSS and BSA with verified citations, and translates documents across Indian languages.
         </p>
-
-        <div className="lp-hero-ctas">
-          <button className="lp-cta-main" onClick={() => navigate('/auth?mode=signup')}>
-            Start Drafting Free
-          </button>
-          <button className="lp-cta-sec" onClick={() => navigate('/auth?mode=signup')}>
-            Open LawGPT →
-          </button>
-          <button className="lp-cta-sec lp-cta-ghost" onClick={() => navigate('/auth?mode=signup')}>
-            Explore Workspace
-          </button>
+        <div className="am-lp-cta">
+          <button className="am-btn am-btn-primary am-lp-cta-btn" onClick={signup}>Start drafting free <Icon name="arrowRight" size={16} /></button>
+          <button className="am-btn am-lp-cta-btn" onClick={() => navigate('/auth?mode=login')}>Sign in</button>
         </div>
 
-        {/* Dashboard Preview */}
-        <div className="lp-dashboard-preview lp-animate">
-          <div className="lp-dash-topbar">
-            <span className="lp-dot lp-dot-red"></span>
-            <span className="lp-dot lp-dot-yellow"></span>
-            <span className="lp-dot lp-dot-green"></span>
-            <span className="lp-dash-url">amicusone.web.app — Dashboard</span>
-          </div>
-          <div className="lp-dash-body">
-            <div className="lp-dash-sidebar">
-              <div className="lp-dash-brand">Amicus One</div>
-              {[
-                { icon: '⊞', label: 'Dashboard', active: true },
-                { icon: '✦', label: 'Generate' },
-                { icon: '💬', label: 'LawGPT' },
-                { icon: '📄', label: 'Documents' },
-                { icon: '👥', label: 'Clients' },
-                { icon: '💳', label: 'Billing' },
-              ].map((item) => (
-                <div key={item.label} className={`lp-dash-nav-item ${item.active ? 'active' : ''}`}>
-                  <span>{item.icon}</span> {item.label}
-                </div>
+        {/* Product preview */}
+        <div className="am-lp-preview">
+          <div className="am-lp-preview-bar"><span /><span /><span /><em>amicusone.web.app/dashboard</em></div>
+          <div className="am-lp-preview-body">
+            <div className="am-lp-preview-side">
+              <div className="am-lp-preview-brand"><span className="am-brand-mark" style={{ width: 24, height: 24 }}><Icon name="scale" size={13} /></span> Amicus One</div>
+              {['Overview', 'Drafting Studio', 'Legal Research', 'Vernacular Translator', 'Redline & Review'].map((l, i) => (
+                <div key={l} className={`am-lp-preview-nav ${i === 0 ? 'active' : ''}`}>{l}</div>
               ))}
             </div>
-            <div className="lp-dash-main">
-              <div className="lp-dash-greeting">Good morning, Advocate Sharma ⚖️</div>
-              <div className="lp-stat-row">
-                <div className="lp-stat-card">
-                  <div className="lp-stat-label">Documents</div>
-                  <div className="lp-stat-val">47</div>
-                </div>
-                <div className="lp-stat-card">
-                  <div className="lp-stat-label">Credits Left</div>
-                  <div className="lp-stat-val lp-gold">18</div>
-                </div>
-                <div className="lp-stat-card">
-                  <div className="lp-stat-label">Clients</div>
-                  <div className="lp-stat-val lp-purple">12</div>
-                </div>
-              </div>
-              <div className="lp-doc-list">
-                {[
-                  { name: 'Rent Agreement — Sharma vs Gupta', tag: 'Property Law', tagClass: '' },
-                  { name: 'NDA — TechCorp Private Limited', tag: 'Corporate', tagClass: 'gold' },
-                  { name: 'FIR Draft — Section 420 IPC', tag: 'Criminal', tagClass: '' },
-                ].map((doc) => (
-                  <div key={doc.name} className="lp-doc-item">
-                    <span className="lp-doc-name">{doc.name}</span>
-                    <span className={`lp-doc-tag ${doc.tagClass}`}>{doc.tag}</span>
-                  </div>
+            <div className="am-lp-preview-main">
+              <div className="am-eyebrow" style={{ fontSize: 10 }}>Thursday, 12 November 2026</div>
+              <div className="am-lp-preview-greeting">Good afternoon, Adv. Sharma</div>
+              <div className="am-lp-preview-stats">
+                {[['Drafts Prepared', '28'], ['Client Directory', '11'], ['Research Briefs', '19'], ['Allowance', '14']].map(([l, v]) => (
+                  <div key={l}><div className="am-lp-preview-label">{l}</div><div className="am-lp-preview-value">{v}</div></div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FEATURES ── */}
-      <section className="lp-section" id="features">
-        <div className="lp-section-inner">
-          <div className="lp-section-label lp-animate">Platform Features</div>
-          <h2 className="lp-section-title lp-animate">Everything a modern lawyer needs</h2>
-          <p className="lp-section-sub lp-animate">
-            One unified workspace replacing hours of manual drafting, research, and document management.
-          </p>
-          <div className="lp-feature-grid">
-            {[
-              {
-                icon: '✦', color: 'purple',
-                title: 'AI Legal Drafting',
-                desc: 'Generate professional documents across 12 categories and 80+ document types in seconds. Multilingual — English, Hindi & 5 regional languages.',
-              },
-              {
-                icon: '💬', color: 'gold',
-                title: 'LawGPT Workspace',
-                desc: 'Ask complex legal questions, upload PDFs and Word documents for contextual AI analysis with section citations from 18 Indian acts.',
-              },
-              {
-                icon: '📄', color: 'teal',
-                title: 'Document Intelligence',
-                desc: 'Upload agreements, judgments, or notices. AI explains clauses, summarizes content, and flags risks in plain language.',
-              },
-              {
-                icon: '👥', color: 'pink',
-                title: 'Client CRM',
-                desc: 'Manage your client roster, link documents to cases, and keep all matter-related files organized in one place.',
-              },
-              {
-                icon: '⚖️', color: 'purple',
-                title: '441+ Legal Sections',
-                desc: 'Searchable database of IPC, BNS, CrPC, IT Act, GST Act, and 14 other Indian acts — instantly cited in your documents.',
-              },
-              {
-                icon: '🌐', color: 'gold',
-                title: '7 Indian Languages',
-                desc: 'Draft in English, Hindi, Marathi, Bengali, Tamil, Kannada, or Telugu. Every document sounds professionally drafted.',
-                },
-                { 
-                icon: '🔄', color: 'teal',
-                title: 'Legal Document Translator',
-                desc: 'Translate Hindi, Marathi, Bengali, Tamil, Kannada & Telugu legal documents to English — with full context preserved across all pages. No broken storyline.',
-                },
-            ].map((feat, i) => (
-              <div key={feat.title} className={`lp-feat-card lp-animate`} style={{ animationDelay: `${i * 0.08}s` }}>
-                <div className={`lp-feat-icon ${feat.color}`}>{feat.icon}</div>
-                <div className="lp-feat-title">{feat.title}</div>
-                <div className="lp-feat-desc">{feat.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section className="lp-section lp-section-dark" id="howitworks">
-        <div className="lp-section-inner">
-          <div className="lp-section-label lp-animate">Workflow</div>
-          <h2 className="lp-section-title lp-animate">Draft in 60 seconds</h2>
-          <p className="lp-section-sub lp-animate">
-            From blank page to signed-ready legal document in four simple steps.
-          </p>
-          <div className="lp-steps">
-            {[
-              { num: '01', title: 'Pick a category', desc: 'Choose from 12 legal categories — Property, Corporate, Criminal, Family, and more.' },
-              { num: '02', title: 'Fill the form', desc: 'Enter party names, dates, and key details. Smart fields adapt to the document type.' },
-              { num: '03', title: 'AI generates', desc: 'Groq-powered AI drafts a complete, professionally worded legal document instantly.' },
-              { num: '04', title: 'Edit & download', desc: 'Review, edit inline, and download as PDF. Clean formatting ready for court filing.' },
-            ].map((step, i) => (
-              <div key={step.num} className="lp-step lp-animate" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="lp-step-num">{step.num}</div>
-                <div className="lp-step-title">{step.title}</div>
-                <div className="lp-step-desc">{step.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── LAWGPT SECTION ── */}
-      <section className="lp-section" id="workspace">
-        <div className="lp-section-inner lp-lawgpt-grid">
-          <div className="lp-animate">
-            <div className="lp-section-label">LawGPT</div>
-            <h2 className="lp-section-title">Your AI legal<br />research assistant</h2>
-            <p className="lp-lawgpt-sub">
-              Upload case files, judgments, or agreements. Ask questions in plain English and get cited,
-              structured legal answers — powered by 441+ Indian legal sections.
-            </p>
-            <div className="lp-lawgpt-checks">
-              {[
-                'Upload PDF, DOCX, TXT, images',
-                'Multi-session chat history',
-                'Legal section citations in answers',
-                'Completely free to use',
-              ].map((item) => (
-                <div key={item} className="lp-check-item">
-                  <span className="lp-check-icon">✓</span>
-                  {item}
-                </div>
+              {[['Residential Leave & License Agreement', 'Property Law'], ['Notice under Section 138 NI Act', 'Civil Litigation'], ['Founders’ Vesting & Shareholders Agreement', 'Corporate Law']].map(([t, a]) => (
+                <div key={t} className="am-lp-preview-row"><span>{t}</span><span className="am-badge">{a}</span></div>
               ))}
             </div>
-            <button className="lp-cta-main" style={{ marginTop: '1.75rem' }} onClick={() => navigate('/auth?mode=signup')}>
-              Try LawGPT Free →
-            </button>
-          </div>
-          <div className="lp-lawgpt-preview lp-animate">
-            <div className="lp-chat-label">You</div>
-            <div className="lp-chat-bubble lp-chat-user">
-              What sections apply in a cheque bounce case under ₹2 lakh?
-            </div>
-            <div className="lp-chat-label" style={{ marginTop: '0.75rem' }}>Amicus One</div>
-            <div className="lp-chat-bubble lp-chat-ai">
-              For a cheque bounce case, the primary provision is{' '}
-              <span className="lp-cite">Section 138 NI Act</span>. You should also consider{' '}
-              <span className="lp-cite">Section 141 NI Act</span> for company liability and{' '}
-              <span className="lp-cite">Section 420 IPC</span> if fraud is alleged.
-              <br /><br />
-              A legal notice must be sent within 30 days of dishonour. The complainant has 1 month from
-              expiry of notice period to file a complaint.
-            </div>
-            <div className="lp-chat-input-row">
-              <div className="lp-chat-input-fake">Ask a legal question...</div>
-              <button className="lp-chat-send">↑</button>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* ── TRANSLATOR SECTION ── */}
-<section className="lp-section lp-section-dark">
-  <div className="lp-section-inner lp-lawgpt-grid">
-    <div className="lp-animate">
-      <div className="lp-section-label">Document Translator</div>
-      <h2 className="lp-section-title">Translate legal documents<br />without losing context</h2>
-      <p className="lp-lawgpt-sub">
-        Receive drafts in Hindi, Marathi, Bengali, Tamil, Kannada, or Telugu?
-        Upload and get a complete English translation — every page connected,
-        no broken storyline, no missing context. Saving you ₹200–250 per page.
-      </p>
-      <div className="lp-lawgpt-checks">
-        {[
-          'Supports PDF, DOCX, TXT — up to 100+ pages',
-          'Context preserved across every page',
-          'Hindi, Marathi, Bengali, Tamil, Kannada, Telugu',
-          'Download as PDF or Word',
-        ].map((item) => (
-          <div key={item} className="lp-check-item">
-            <span className="lp-check-icon">✓</span>
-            {item}
-          </div>
-        ))}
-      </div>
-      <button
-        className="lp-cta-main"
-        style={{ marginTop: '1.75rem' }}
-        onClick={() => navigate('/auth?mode=signup')}
-      >
-        Try Translator →
-      </button>
-    </div>
-    <div className="lp-lawgpt-preview lp-animate">
-      <div style={{
-        background: 'rgba(255,255,255,0.04)',
-        borderRadius: '10px',
-        padding: '1rem',
-        marginBottom: '0.75rem',
-        border: '0.5px solid rgba(255,255,255,0.08)'
-      }}>
-        <div className="lp-chat-label" style={{ marginBottom: '0.5rem' }}>
-          📄 Original — Hindi
+      {/* Numbers */}
+      <section className="am-lp-numbers">
+        <div className="am-lp-wrap am-lp-numbers-grid">
+          {[['12', 'Practice areas'], ['64', 'Standard instruments'], ['1,059', 'Statutory sections, verified'], ['12', 'Languages for translation']].map(([n, l]) => (
+            <div key={l}><div className="am-lp-number">{n}</div><div className="am-lp-number-label">{l}</div></div>
+          ))}
         </div>
-        <div style={{ fontSize: '0.82rem', color: '#8888a0', lineHeight: 1.6 }}>
-          यह किरायानामा दिनांक 15 जनवरी 2025 को श्री राजेश शर्मा (मकान मालिक)
-          और श्री अमित गुप्ता (किरायेदार) के बीच निष्पादित किया गया है।
-          मासिक किराया ₹15,000 निर्धारित किया गया है...
-        </div>
-      </div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.2rem',
-        color: '#a78bfa',
-        margin: '0.5rem 0',
-      }}>
-        ↓ Amicus One Translation
-      </div>
-      <div className="lp-chat-bubble lp-chat-ai">
-        <div className="lp-chat-label" style={{ marginBottom: '0.5rem' }}>
-          ✅ Translated — English
-        </div>
-        This Rent Agreement is executed on 15th January 2025 between
-        Mr. Rajesh Sharma (Landlord) and Mr. Amit Gupta (Tenant).
-        The monthly rent is fixed at ₹15,000...
-        <br /><br />
-        <span className="lp-cite">Full context preserved across all pages</span>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
-      {/* ── STATS ── */}
-      <section className="lp-section lp-section-stats">
-        <div className="lp-section-inner" style={{ textAlign: 'center' }}>
-          <div className="lp-section-label lp-animate">Built for India</div>
-          <h2 className="lp-section-title lp-animate">Numbers that matter</h2>
-          <div className="lp-stats-row">
-            {[
-              { num: '80+', label: 'Document types' },
-              { num: '441+', label: 'Legal sections indexed' },
-              { num: '12', label: 'Legal categories' },
-              { num: '7', label: 'Indian languages' },
-              { num: '60s', label: 'Avg. draft time' },
-            ].map((stat, i) => (
-              <div key={stat.label} className="lp-stat-big lp-animate" style={{ animationDelay: `${i * 0.07}s` }}>
-                <div className="lp-stat-big-num">{stat.num}</div>
-                <div className="lp-stat-big-label">{stat.label}</div>
+      {/* Workflows */}
+      <section className="am-lp-section am-lp-wrap" id="workflows">
+        <div className="am-eyebrow">Chambers workflows</div>
+        <h2 className="am-lp-h2">Four tools that fit how a practice runs</h2>
+        <div className="am-lp-grid-2">
+          {WORKFLOWS.map(w => (
+            <div key={w.title} className="am-lp-card">
+              <div className="am-workflow-icon"><Icon name={w.icon} size={19} /></div>
+              <h3 className="am-lp-h3">{w.title}</h3>
+              <p className="am-lp-text">{w.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Trust */}
+      <section className="am-lp-band" id="trust">
+        <div className="am-lp-wrap am-lp-section">
+          <div className="am-eyebrow">Why it is reliable</div>
+          <h2 className="am-lp-h2">Built to avoid the mistakes generic AI makes</h2>
+          <div className="am-lp-grid-4">
+            {TRUST.map(t => (
+              <div key={t.title}>
+                <div className="am-lp-trust-icon"><Icon name={t.icon} size={18} /></div>
+                <h3 className="am-lp-h3" style={{ fontSize: 17 }}>{t.title}</h3>
+                <p className="am-lp-text">{t.text}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── PRICING PLACEHOLDER ── */}
-      <section className="lp-section" id="pricing-placeholder">
-        <div className="lp-section-inner" style={{ textAlign: 'center' }}>
-          <div className="lp-section-label lp-animate">Pricing</div>
-          <h2 className="lp-section-title lp-animate">Simple, transparent pricing</h2>
-          <p className="lp-section-sub lp-animate" style={{ margin: '0 auto 2.5rem' }}>
-            Start free. Scale as you grow. No hidden fees.
+      {/* Translation example */}
+      <section className="am-lp-section am-lp-wrap am-lp-split">
+        <div>
+          <div className="am-eyebrow">Vernacular translator</div>
+          <h2 className="am-lp-h2">Translate legal documents without losing context</h2>
+          <p className="am-lp-text" style={{ fontSize: 16 }}>
+            Long documents are translated section by section with the preceding text carried forward, so parties,
+            defined terms and numbering stay consistent across every page. Works in both directions.
           </p>
-          <div className="lp-pricing-grid">
-            {[
-              {
-                plan: 'Free', price: '₹0', period: '/month',
-                credits: '3 documents/month', features: ['AI document drafting', 'LawGPT access (free)', 'PDF download', 'Basic support'],
-                cta: 'Get Started Free', highlight: false,
-              },
-              {
-                plan: 'Starter', price: '₹299', period: '/month',
-                credits: '20 documents/month', features: ['Everything in Free', 'Priority generation', 'Document history', 'Email support'],
-                cta: 'Coming Soon', highlight: true,
-              },
-              {
-                plan: 'Pro', price: '₹699', period: '/month',
-                credits: 'Unlimited documents', features: ['Everything in Starter', 'Clients CRM', 'Multi-language drafts', 'Priority support'],
-                cta: 'Coming Soon', highlight: false,
-              },
-            ].map((plan) => (
-              <div key={plan.plan} className={`lp-pricing-card lp-animate ${plan.highlight ? 'lp-pricing-highlight' : ''}`}>
-                {plan.highlight && <div className="lp-pricing-badge">Most Popular</div>}
-                <div className="lp-pricing-plan">{plan.plan}</div>
-                <div className="lp-pricing-price">
-                  {plan.price}<span className="lp-pricing-period">{plan.period}</span>
-                </div>
-                <div className="lp-pricing-credits">{plan.credits}</div>
-                <ul className="lp-pricing-features">
-                  {plan.features.map((f) => (
-                    <li key={f}><span className="lp-check-icon">✓</span> {f}</li>
-                  ))}
+          <button className="am-btn am-btn-primary" style={{ marginTop: 20 }} onClick={signup}>Try the translator</button>
+        </div>
+        <div className="am-lp-translation">
+          <div className="am-lp-translation-tag">Hindi</div>
+          <p lang="hi">यह किरायानामा मकान मालिक और किरायेदार के बीच निष्पादित किया गया है। मासिक किराया ₹15,000 निर्धारित किया गया है।</p>
+          <div className="am-lp-translation-arrow"><Icon name="arrowRight" size={16} /></div>
+          <div className="am-lp-translation-tag">English</div>
+          <p>This rent agreement is executed between the landlord and the tenant. The monthly rent is fixed at ₹15,000.</p>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="am-lp-band" id="pricing">
+        <div className="am-lp-wrap am-lp-section">
+          <div className="am-eyebrow">Pricing</div>
+          <h2 className="am-lp-h2">Simple, transparent pricing</h2>
+          <div className="am-lp-grid-3">
+            {PLANS.map(p => (
+              <div key={p.plan} className={`am-lp-plan ${p.highlight ? 'highlight' : ''}`}>
+                <div className="am-lp-plan-name">{p.plan}</div>
+                <div className="am-lp-plan-price">{p.price}<span>{p.period}</span></div>
+                <div className="am-lp-plan-credits">{p.credits}</div>
+                <ul>
+                  {p.features.map(f => <li key={f}><Icon name="check" size={15} /> {f}</li>)}
                 </ul>
                 <button
-                  className={plan.highlight ? 'lp-cta-main' : 'lp-cta-sec'}
+                  className={`am-btn ${p.highlight ? 'am-btn-primary' : ''}`}
                   style={{ width: '100%' }}
-                  onClick={() => plan.cta === 'Get Started Free' && navigate('/auth?mode=signup')}
+                  disabled={p.cta !== 'Get Started Free'}
+                  onClick={signup}
                 >
-                  {plan.cta}
+                  {p.cta}
                 </button>
               </div>
             ))}
@@ -420,63 +175,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA BANNER ── */}
-      <section className="lp-cta-banner lp-animate">
-        <div className="lp-cta-banner-inner">
-          <h2 className="lp-cta-banner-title">
-            Ready to transform your legal practice?
-          </h2>
-          <p className="lp-cta-banner-sub">
-            Join lawyers across India using Amicus One to draft faster, research smarter, and serve clients better.
-          </p>
-          <div className="lp-hero-ctas" style={{ justifyContent: 'center' }}>
-            <button className="lp-cta-main" onClick={() => navigate('/auth?mode=signup')}>
-              Start Free Today
-            </button>
-            <button className="lp-cta-sec" onClick={() => navigate('/auth?mode=login')}>
-              Log in →
-            </button>
-          </div>
+      {/* CTA */}
+      <section className="am-lp-section am-lp-wrap" style={{ textAlign: 'center' }}>
+        <h2 className="am-lp-h2" style={{ margin: '0 auto' }}>Bring your next matter to Amicus One</h2>
+        <p className="am-lp-text" style={{ maxWidth: 520, margin: '12px auto 0', fontSize: 16 }}>Three free documents to start. No card required.</p>
+        <div className="am-lp-cta" style={{ justifyContent: 'center' }}>
+          <button className="am-btn am-btn-primary am-lp-cta-btn" onClick={signup}>Create your account</button>
+          <button className="am-btn am-lp-cta-btn" onClick={() => navigate('/firm/signup')}>Register a law firm</button>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="lp-footer">
-        <div className="lp-footer-inner">
-          <div className="lp-footer-grid">
-            <div className="lp-footer-brand">
-              <div className="lp-logo">Lex<span>ora</span></div>
-              <p>The modern AI workspace for Indian legal professionals. Draft smarter. Work faster.</p>
-            </div>
-            <div className="lp-footer-col">
-  <h4>Product</h4>
-  <a href="#features">AI Drafting</a>
-  <a href="#workspace">LawGPT</a>
-  <a href="#features">Translator</a>
-  <a href="#features">Documents</a>
-  <a href="#features">Clients CRM</a>
-</div>
-<div className="lp-footer-col">
-  <h4>Company</h4>
-  <button className="lp-footer-btn" style={{color:'#8888a0'}}>About</button>
-  <a href="#pricing-placeholder" style={{color:'#8888a0', display:'block', fontSize:'0.8rem', marginBottom:'0.5rem', textDecoration:'none'}}>Pricing</a>
-  <button className="lp-footer-btn" style={{color:'#8888a0'}}>Blog</button>
-  <button className="lp-footer-btn" style={{color:'#8888a0'}}>Contact</button>
-</div>
-<div className="lp-footer-col">
-  <h4>Legal</h4>
-  <button className="lp-footer-btn" style={{color:'#8888a0'}}>Privacy Policy</button>
-  <button className="lp-footer-btn" style={{color:'#8888a0'}}>Terms of Service</button>
-  <button className="lp-footer-btn" style={{color:'#8888a0'}}>Refund Policy</button>
-</div>
-          </div>
-          <div className="lp-footer-bottom">
-            <span>© 2025 Amicus One. All rights reserved.</span>
-            <span>Built for Indian lawyers ⚖️</span>
-          </div>
+      <footer className="am-lp-footer">
+        <div className="am-lp-wrap am-lp-footer-inner">
+          <span className="am-brand-name" style={{ fontSize: 18 }}>Amicus One</span>
+          <span>Research and drafting aid for advocates. Outputs should be reviewed before use.</span>
+          <span>© {new Date().getFullYear()} Amicus One</span>
         </div>
       </footer>
-
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import Layout from '../components/Layout';
@@ -39,19 +40,19 @@ export default function Billing() {
 
   const getActionIcon = (type) => {
     const icons = {
-      document_generated: '📄',
-      lawgpt_message: '⚖️',
-      pdf_uploaded: '📎',
-      default: '🔹'
+      document_generated: '',
+      lawgpt_message: '',
+      pdf_uploaded: '',
+      default: ''
     };
     return icons[type] || icons.default;
   };
 
   const getActionColor = (type) => {
     const colors = {
-      document_generated: '#c9a84c',
-      lawgpt_message: '#4c9ac9',
-      pdf_uploaded: '#4cc97a'
+      document_generated: '#1E3A8A',
+      lawgpt_message: '#92400E',
+      pdf_uploaded: '#166534'
     };
     return colors[type] || '#888';
   };
@@ -73,7 +74,7 @@ export default function Billing() {
         {/* Page Header */}
         <div className="page-header">
           <div>
-            <h1 className="page-title">💳 Billing & Credits</h1>
+            <h1 className="page-title">Billing & Credits</h1>
             <p className="page-subtitle">Track your usage and credit balance</p>
           </div>
         </div>
@@ -87,7 +88,7 @@ export default function Billing() {
             {/* Credits Overview */}
             <div className="billing-stats-grid">
               <div className="billing-stat-card highlight">
-                <div className="billing-stat-icon">🪙</div>
+                <div className="billing-stat-icon"><Icon name="card" /></div>
                 <div className="billing-stat-content">
                   <div className="billing-stat-number">
                     {userProfile?.credits ?? stats?.creditsRemaining ?? 0}
@@ -97,7 +98,7 @@ export default function Billing() {
               </div>
 
               <div className="billing-stat-card">
-                <div className="billing-stat-icon">📊</div>
+                <div className="billing-stat-icon"><Icon name="trending" /></div>
                 <div className="billing-stat-content">
                   <div className="billing-stat-number">
                     {stats?.totalCreditsUsed ?? 0}
@@ -107,7 +108,7 @@ export default function Billing() {
               </div>
 
               <div className="billing-stat-card">
-                <div className="billing-stat-icon">📄</div>
+                <div className="billing-stat-icon"><Icon name="file" /></div>
                 <div className="billing-stat-content">
                   <div className="billing-stat-number">
                     {userProfile?.documents_generated ?? stats?.documentsGenerated ?? 0}
@@ -117,12 +118,12 @@ export default function Billing() {
               </div>
 
               <div className="billing-stat-card">
-                <div className="billing-stat-icon">⚖️</div>
+                <div className="billing-stat-icon"><Icon name="scale" /></div>
                 <div className="billing-stat-content">
                   <div className="billing-stat-number">
                     {stats?.lawgptCount ?? 0}
                   </div>
-                  <div className="billing-stat-label">LawGPT Sessions</div>
+                  <div className="billing-stat-label">Research Sessions</div>
                 </div>
               </div>
             </div>
@@ -151,21 +152,21 @@ export default function Billing() {
                 {/* Usage Breakdown */}
                 <div className="usage-breakdown">
                   <div className="usage-breakdown-item">
-                    <span className="ub-dot" style={{ background: '#c9a84c' }} />
+                    <span className="ub-dot" style={{ background: '#1E3A8A' }} />
                     <span className="ub-label">Document Generation</span>
                     <span className="ub-count">
                       {stats?.docCount ?? 0} times
                     </span>
                   </div>
                   <div className="usage-breakdown-item">
-                    <span className="ub-dot" style={{ background: '#4c9ac9' }} />
-                    <span className="ub-label">LawGPT Messages</span>
+                    <span className="ub-dot" style={{ background: '#92400E' }} />
+                    <span className="ub-label">Research Questions</span>
                     <span className="ub-count">
                       {stats?.lawgptCount ?? 0} messages
                     </span>
                   </div>
                   <div className="usage-breakdown-item">
-                    <span className="ub-dot" style={{ background: '#4cc97a' }} />
+                    <span className="ub-dot" style={{ background: '#166534' }} />
                     <span className="ub-label">PDF Uploads</span>
                     <span className="ub-count">
                       {stats?.pdfCount ?? 0} files
@@ -193,7 +194,7 @@ export default function Billing() {
 
               {filteredLogs.length === 0 ? (
                 <div className="empty-page-state">
-                  <div className="empty-icon">📊</div>
+                  <div className="empty-icon"><Icon name="trending" /></div>
                   <h3>No activity yet</h3>
                   <p>Your usage history will appear here.</p>
                 </div>
@@ -217,7 +218,7 @@ export default function Billing() {
                       </div>
                       {log.credits_used > 0 && (
                         <div className="usage-log-credits">
-                          -{log.credits_used} 🪙
+                          -{log.credits_used} 
                         </div>
                       )}
                     </div>

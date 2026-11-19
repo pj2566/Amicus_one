@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Icon from './Icon';
 import { api } from '../api';
 
 const SENSITIVE_CATEGORIES = [
@@ -138,7 +139,7 @@ export default function LegalSectionsAssistant({
       {/* Header */}
       <div className="lsa-header">
         <div className="lsa-title-wrap">
-          <span style={{fontSize:'22px'}}>⚖️</span>
+          <Icon name="scale" size={20} />
           <div>
             <h3 className="lsa-title">Applicable Legal Sections / Articles</h3>
             <p className="lsa-subtitle">
@@ -152,7 +153,7 @@ export default function LegalSectionsAssistant({
       {/* Search Box */}
       <div className="lsa-search-wrap" ref={searchDropdownRef}>
         <div className="lsa-search-box">
-          <span>🔍</span>
+          <Icon name="search" size={15} />
           <input
             type="text"
             placeholder="Type section or keyword... e.g. '420', 'cheating', 'Article 21'"
@@ -170,7 +171,7 @@ export default function LegalSectionsAssistant({
                 setSearchResults([]);
                 setShowSearchDropdown(false);
               }}>
-              ✕
+              
             </button>
           )}
         </div>
@@ -202,7 +203,7 @@ export default function LegalSectionsAssistant({
                         </span>
                         <span className="lsa-act-tag">{section.act_short}</span>
                         {added && (
-                          <span className="lsa-added-tag">✓ Added</span>
+                          <span className="lsa-added-tag">Added</span>
                         )}
                       </div>
                       <p className="lsa-result-desc">{section.description}</p>
@@ -219,7 +220,7 @@ export default function LegalSectionsAssistant({
       {selectedSections.length > 0 && (
         <div className="lsa-selected-wrap">
           <p className="lsa-selected-label">
-            ✅ {selectedSections.length} Section(s) Added to Document:
+            {selectedSections.length} Section(s) Added to Document:
           </p>
           <div className="lsa-chips">
             {selectedSections.map(section => (
@@ -249,8 +250,8 @@ export default function LegalSectionsAssistant({
           {isLoadingSuggestions
             ? '⏳ Analyzing your case details...'
             : suggestionsVisible
-            ? '🔄 Refresh AI Suggestions'
-            : '💡 Get AI Section Suggestions'}
+            ? 'Refresh AI Suggestions'
+            : 'Get AI Section Suggestions'}
         </button>
 
         {/* AI Suggestions List */}
@@ -263,13 +264,13 @@ export default function LegalSectionsAssistant({
               </div>
             ) : aiSuggestions.length === 0 ? (
               <div className="lsa-no-suggestions">
-                <p>✅ All suggestions have been added or none found.</p>
+                <p>All suggestions have been added or none found.</p>
               </div>
             ) : (
               <>
                 <div className="lsa-suggestions-header">
                   <p className="lsa-suggestions-title">
-                    💡 {aiSuggestions.length} section(s) found
+                    {aiSuggestions.length} section(s) found
                     {unadded.length < aiSuggestions.length
                       ? ` (${aiSuggestions.length - unadded.length} already added)`
                       : ''
@@ -301,7 +302,7 @@ export default function LegalSectionsAssistant({
                             {section.act_short}
                           </span>
                           {added && (
-                            <span className="lsa-added-tag">✓ Added</span>
+                            <span className="lsa-added-tag">Added</span>
                           )}
                         </div>
                         <p className="lsa-result-desc">{section.description}</p>
@@ -311,7 +312,7 @@ export default function LegalSectionsAssistant({
                         className={`lsa-add-one-btn ${added ? 'lsa-add-one-btn-added' : ''}`}
                         onClick={() => handleAddAiSection(section)}
                         disabled={added}>
-                        {added ? '✓' : '+ Add'}
+                        {added ? 'Added' : '+ Add'}
                       </button>
                     </div>
                   );
@@ -324,7 +325,7 @@ export default function LegalSectionsAssistant({
 
       {/* Disclaimer */}
       <p className="lsa-disclaimer">
-        ⚠️ AI suggestions are recommendations only. Always verify before use.
+        AI suggestions are recommendations only. Always verify before use.
       </p>
     </div>
   );

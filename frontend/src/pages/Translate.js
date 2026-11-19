@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
@@ -9,17 +10,17 @@ import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 
 const LANGUAGES = [
-  { value: 'Hindi',   label: '🇮🇳 Hindi' },
-  { value: 'Marathi', label: '🇮🇳 Marathi' },
-  { value: 'Bengali', label: '🇮🇳 Bengali' },
-  { value: 'Tamil',   label: '🇮🇳 Tamil' },
-  { value: 'Kannada', label: '🇮🇳 Kannada' },
-  { value: 'Telugu',  label: '🇮🇳 Telugu' },
-  { value: 'Gujarati', label: '🇮🇳 Gujarati' },
-  { value: 'Malayalam', label: '🇮🇳 Malayalam' },
-  { value: 'Punjabi', label: '🇮🇳 Punjabi' },
-  { value: 'Odia',    label: '🇮🇳 Odia' },
-  { value: 'Urdu',    label: '🇮🇳 Urdu' },
+  { value: 'Hindi',   label: 'Hindi' },
+  { value: 'Marathi', label: 'Marathi' },
+  { value: 'Bengali', label: 'Bengali' },
+  { value: 'Tamil',   label: 'Tamil' },
+  { value: 'Kannada', label: 'Kannada' },
+  { value: 'Telugu',  label: 'Telugu' },
+  { value: 'Gujarati', label: 'Gujarati' },
+  { value: 'Malayalam', label: 'Malayalam' },
+  { value: 'Punjabi', label: 'Punjabi' },
+  { value: 'Odia',    label: 'Odia' },
+  { value: 'Urdu',    label: 'Urdu' },
 ];
 
 const ACCEPTED_TYPES = [
@@ -147,7 +148,7 @@ export default function Translate() {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(255, 255, 255);
-        doc.text('⚖ LEXORA — TRANSLATED DOCUMENT', marginLeft, 12);
+        doc.text('LEXORA — TRANSLATED DOCUMENT', marginLeft, 12);
         doc.setTextColor(0, 0, 0);
       };
 
@@ -374,13 +375,13 @@ export default function Translate() {
         {/* Page Header */}
         <div className="translate-header">
           <div>
-            <h1 className="translate-title">🌐 Document Translator</h1>
+            <h1 className="translate-title">Document Translator</h1>
             <p className="translate-subtitle">
               Translate legal documents between English and Indian languages — with full context preserved across all pages. Scanned PDFs and photos are supported.
             </p>
           </div>
           <div className="translate-credit-badge">
-            🪙 {userProfile?.is_firm_member ? 'Firm Pool' : (userProfile?.credits ?? 0)} Credits
+            {userProfile?.is_firm_member ? 'Firm Pool' : (userProfile?.credits ?? 0)} Credits
           </div>
         </div>
 
@@ -433,7 +434,7 @@ export default function Translate() {
               />
               {selectedFile ? (
                 <div className="translate-file-selected">
-                  <div className="translate-file-icon">📄</div>
+                  <div className="translate-file-icon"><Icon name="file" /></div>
                   <div className="translate-file-info">
                     <div className="translate-file-name">{fileName}</div>
                     <div className="translate-file-size">
@@ -444,12 +445,12 @@ export default function Translate() {
                     className="translate-file-remove"
                     onClick={(e) => { e.stopPropagation(); handleReset(); }}
                   >
-                    ✕
+                    
                   </button>
                 </div>
               ) : (
                 <div className="translate-dropzone-inner">
-                  <div className="translate-dropzone-icon">📂</div>
+                  <div className="translate-dropzone-icon"><Icon name="upload" /></div>
                   <div className="translate-dropzone-text">
                     Drag & drop or <span className="translate-dropzone-link">browse file</span>
                   </div>
@@ -461,7 +462,7 @@ export default function Translate() {
             </div>
 
             <div className="translate-notice">
-              ⚡ Translation costs <strong>1 credit</strong>. You have <strong>{userProfile?.is_firm_member ? 'firm pool' : (userProfile?.credits ?? 0)} credits</strong>.
+              Translation costs <strong>1 credit</strong>. You have <strong>{userProfile?.is_firm_member ? 'firm pool' : (userProfile?.credits ?? 0)} credits</strong>.
               Context is preserved across all pages — no broken storyline.
             </div>
 
@@ -470,7 +471,7 @@ export default function Translate() {
               onClick={handleTranslate}
               disabled={!selectedFile || !hasCredits}
             >
-              🌐 Translate to {targetLanguage} (1 Credit)
+              Translate to {targetLanguage} (1 Credit)
             </button>
           </div>
         )}
@@ -497,7 +498,7 @@ export default function Translate() {
             {/* Result Header */}
             <div className="translate-result-header">
               <div>
-                <h2 className="translate-result-title">✅ Translation Complete!</h2>
+                <h2 className="translate-result-title">Translation Complete!</h2>
                 <p className="translate-result-sub">
                   {fileName} — translated from {sourceLanguage} to {targetLanguage}
                 </p>
@@ -506,14 +507,14 @@ export default function Translate() {
                 {/* The PDF export's built-in fonts only cover Latin script; use Word for Indian scripts */}
                 {targetLanguage === 'English' && (
                   <button className="translate-btn-primary" onClick={downloadPDF}>
-                    ⬇️ Download PDF
+                    Download PDF
                   </button>
                 )}
                 <button className="translate-btn-outline" onClick={downloadDOCX}>
-                  📝 Download Word
+                  Download Word
                 </button>
                 <button className="translate-btn-ghost" onClick={handleReset}>
-                  🔄 Translate Another
+                  Translate Another
                 </button>
               </div>
             </div>
@@ -592,7 +593,7 @@ export default function Translate() {
 
             {/* Edit section */}
             <div className="translate-card">
-              <h3 className="translate-edit-title">✏️ Edit Translation</h3>
+              <h3 className="translate-edit-title">Edit Translation</h3>
               <p className="translate-edit-note">
                 Make corrections below — page view updates automatically:
               </p>
@@ -607,14 +608,14 @@ export default function Translate() {
             {/* Bottom actions */}
             <div className="result-actions" style={{ marginTop: '1.5rem' }}>
               <button className="btn-primary" style={{ width: 'auto', padding: '12px 24px' }} onClick={downloadPDF}>
-                ⬇️ Download PDF
+                Download PDF
               </button>
               <button className="btn-outline" style={{ width: 'auto', padding: '12px 24px' }} onClick={downloadDOCX}>
-                📝 Download Word
+                Download Word
               </button>
               Back to Dashboard
               <button className="btn-outline" onClick={handleReset}>
-                🔄 Translate Another
+                Translate Another
               </button>
             </div>
           </div>

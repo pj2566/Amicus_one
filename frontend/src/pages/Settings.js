@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import Layout from '../components/Layout';
@@ -52,9 +53,9 @@ export default function Settings() {
   };
 
   const tabs = [
-    { id: 'profile', label: '👤 Profile', },
-    { id: 'account', label: '🔐 Account' },
-    { id: 'preferences', label: '⚙️ Preferences' }
+    { id: 'profile', label: 'Profile', },
+    { id: 'account', label: 'Account' },
+    { id: 'preferences', label: 'Preferences' }
   ];
 
   return (
@@ -64,7 +65,7 @@ export default function Settings() {
         {/* Page Header */}
         <div className="page-header">
           <div>
-            <h1 className="page-title">⚙️ Settings</h1>
+            <h1 className="page-title">Settings</h1>
             <p className="page-subtitle">Manage your account and preferences</p>
           </div>
         </div>
@@ -174,7 +175,7 @@ export default function Settings() {
                       className="dash-action-btn primary"
                       disabled={saving}
                     >
-                      {saving ? 'Saving...' : '💾 Save Changes'}
+                      {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>
@@ -194,7 +195,7 @@ export default function Settings() {
                   <div className="account-info-item">
                     <span className="aii-label">Account Role</span>
                     <span className="aii-value">
-                      {userProfile?.role === 'admin' ? '👑 Administrator' : '👤 Lawyer'}
+                      {userProfile?.role === 'admin' ? 'Administrator' : 'Lawyer'}
                     </span>
                   </div>
                   <div className="account-info-item">
@@ -206,13 +207,13 @@ export default function Settings() {
                   <div className="account-info-item">
                     <span className="aii-label">Credits Remaining</span>
                     <span className="aii-value">
-                      🪙 {userProfile?.credits ?? 0} Credits
+                      {userProfile?.credits ?? 0} Credits
                     </span>
                   </div>
                   <div className="account-info-item">
                     <span className="aii-label">Documents Generated</span>
                     <span className="aii-value">
-                      📄 {userProfile?.documents_generated ?? 0} Documents
+                      {userProfile?.documents_generated ?? 0} Documents
                     </span>
                   </div>
                   <div className="account-info-item">
@@ -234,7 +235,7 @@ export default function Settings() {
                 <div className="account-security">
                   <h3 className="settings-form-title">Security</h3>
                   <div className="security-note">
-                    🔐 Password and authentication are managed through your
+                    Password and authentication are managed through your
                     email provider. To change your password, use the
                     forgot password option on the login page.
                   </div>
@@ -296,7 +297,6 @@ export default function Settings() {
                 <div className="settings-divider" />
 
                 <div className="pref-coming-soon">
-                  <span>⚡</span>
                   <span>
                     Preference saving will be available in the next update.
                     These settings are placeholders for upcoming features.

@@ -1,10 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import toast from 'react-hot-toast';
+import Layout from '../components/Layout';
+import Icon from '../components/Icon';
+
+const SUGGESTIONS = [
+  'What replaced Section 420 IPC, and what is the punishment now?',
+  'When can the police arrest without a warrant under the BNSS?',
+  'Is a WhatsApp chat admissible without a certificate under the BSA?',
+  'The offence was committed in March 2024. Does the IPC or the BNS apply?'
+];
+
+// Replies end with an automatic verification note when a citation could not be checked
+const splitVerificationNote = (content = '') => {
+  const i = content.indexOf('\n\nVerification note:');
+  return i < 0 ? [content, null] : [content.slice(0, i), content.slice(i).replace(/^\s*Verification note:\s*/, '')];
+};
 
 export default function LawGPT() {
-  const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -103,13 +116,14 @@ export default function LawGPT() {
 
     try {
       const res = await api.lawgptSendMessage(activeChatId, userMsg.content);
-      const { reply, cited_sections, title } = res.data;
+      const { reply, cited_sections, verification, title } = res.data;
 
       const aiMsg = {
         role: 'assistant',
         content: reply,
         timestamp: new Date().toISOString(),
-        cited_sections: cited_sections || []
+        cited_sections: cited_sections || [],
+        verification
       };
       setMessages(prev => [...prev, aiMsg]);
 
@@ -166,11 +180,11 @@ export default function LawGPT() {
       setChats(prev => prev.map(c =>
         c.id === activeChatId ? { ...c, pdf_name: file_name } : c
       ));
-      toast.success(`📄 ${file_name} uploaded and ready`);
+      toast.success(`${file_name} uploaded and ready`);
       // Add a system message in chat to show PDF was attached
       const systemMsg = {
         role: 'assistant',
-        content: `📄 **${file_name}** has been uploaded and attached to this session (${pages} pages). You can now ask me anything about this document — summarize it, explain clauses, identify risks, find relevant legal sections, and more.`,
+        content: `**${file_name}** has been uploaded and attached to this session (${pages} pages). You can now ask me anything about this document — summarize it, explain clauses, identify risks, find relevant legal sections, and more.`,
         timestamp: new Date().toISOString(),
         cited_sections: []
       };
@@ -199,7 +213,7 @@ export default function LawGPT() {
       const res = await api.lawgptAnalyseDocument(activeChatId);
       const aiMsg = {
         role: 'assistant',
-        content: `📊 **DOCUMENT ANALYSIS: ${activePdfName}**\n\n${res.data.analysis}`,
+        content: `**Document analysis: ${activePdfName}**\n\n${res.data.analysis}`,
         timestamp: new Date().toISOString(),
         cited_sections: [],
         is_analysis: true
@@ -265,7 +279,7 @@ export default function LawGPT() {
       .replace(/^(\s*)[*-] /gm, '$1• ')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[([^\]]+)\]/g, '<span class="lawgpt-citation">$1</span>')
+      .replace(/\[([^\]]+)\]/g, '<span class="am-inline-cite">$1</span>')
       .replace(/\n/g, '<br/>');
   };
 
@@ -288,239 +302,189 @@ export default function LawGPT() {
   const groupedChats = groupChatsByDate(filteredChats);
 
   return (
-    <div className="lawgpt-container">
-
-      {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
-      <div className="lawgpt-sidebar">
-
-        {/* Back to Dashboard */}
-        <div className="lawgpt-sidebar-top">
-          <button className="lawgpt-back-btn" onClick={() => navigate('/dashboard')}>
-            ← Dashboard
+    <Layout>
+      <div className="am-research">
+        {/* Sessions */}
+        <aside className="am-sessions">
+          <button className="am-btn am-btn-primary" style={{ width: '100%' }} onClick={handleNewChat}>
+            <Icon name="plus" size={16} /> New Research Session
           </button>
-          <button className="lawgpt-new-chat-btn" onClick={handleNewChat}>
-            + New Chat
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="lawgpt-search-wrap">
-          <input
-            type="text"
-            placeholder="Search chats..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="lawgpt-search-input"
-          />
-        </div>
-
-        {/* Chat List */}
-        <div className="lawgpt-chat-list">
-          {isSidebarLoading ? (
-            <div className="lawgpt-sidebar-loading">Loading chats...</div>
-          ) : filteredChats.length === 0 ? (
-            <div className="lawgpt-sidebar-empty">
-              No chats yet.<br />Click "+ New Chat" to begin.
-            </div>
-          ) : (
-            Object.entries(groupedChats).map(([group, groupChats]) =>
-              groupChats.length > 0 && (
-                <div key={group}>
-                  <div className="lawgpt-chat-group-label">{group}</div>
-                  {groupChats.map(chat => (
-                    <div
-                      key={chat.id}
-                      className={`lawgpt-chat-item ${activeChatId === chat.id ? 'active' : ''}`}
-                      onClick={() => handleSelectChat(chat.id)}
-                    >
-                      {editingTitleId === chat.id ? (
-                        <input
-                          className="lawgpt-rename-input"
-                          value={editingTitleValue}
-                          onChange={e => setEditingTitleValue(e.target.value)}
-                          onBlur={() => handleRenameChat(chat.id)}
-                          onKeyDown={e => e.key === 'Enter' && handleRenameChat(chat.id)}
-                          autoFocus
-                          onClick={e => e.stopPropagation()}
-                        />
-                      ) : (
-                        <span
-                          className="lawgpt-chat-title"
-                          onDoubleClick={e => {
-                            e.stopPropagation();
-                            setEditingTitleId(chat.id);
-                            setEditingTitleValue(chat.title);
-                          }}
-                        >
-                          {chat.pdf_name ? '📄 ' : '💬 '}
-                          {chat.title}
-                        </span>
-                      )}
-                      <button
-                        className="lawgpt-delete-btn"
-                        onClick={e => handleDeleteChat(e, chat.id)}
-                        title="Delete chat"
+          <div className="am-search" style={{ width: '100%', margin: '14px 0 6px' }}>
+            <Icon name="search" size={15} />
+            <input placeholder="Search sessions…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+          </div>
+          <div className="am-session-list">
+            {isSidebarLoading ? (
+              <div className="am-session-empty">Loading sessions…</div>
+            ) : filteredChats.length === 0 ? (
+              <div className="am-session-empty">No research sessions yet.</div>
+            ) : (
+              Object.entries(groupedChats).map(([group, groupChats]) =>
+                groupChats.length > 0 && (
+                  <div key={group}>
+                    <div className="am-nav-label" style={{ padding: '16px 10px 6px' }}>{group}</div>
+                    {groupChats.map(chat => (
+                      <div
+                        key={chat.id}
+                        className={`am-session ${activeChatId === chat.id ? 'active' : ''}`}
+                        onClick={() => handleSelectChat(chat.id)}
                       >
-                        ×
-                      </button>
-                    </div>
+                        <Icon name={chat.pdf_name ? 'file' : 'message'} size={15} />
+                        {editingTitleId === chat.id ? (
+                          <input
+                            className="am-session-rename"
+                            value={editingTitleValue}
+                            onChange={e => setEditingTitleValue(e.target.value)}
+                            onBlur={() => handleRenameChat(chat.id)}
+                            onKeyDown={e => e.key === 'Enter' && handleRenameChat(chat.id)}
+                            autoFocus
+                            onClick={e => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span
+                            className="am-session-title"
+                            title="Double-click to rename"
+                            onDoubleClick={e => { e.stopPropagation(); setEditingTitleId(chat.id); setEditingTitleValue(chat.title); }}
+                          >
+                            {chat.title}
+                          </span>
+                        )}
+                        <button className="am-session-delete" onClick={e => handleDeleteChat(e, chat.id)} title="Delete session">
+                          <Icon name="x" size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )
+              )
+            )}
+          </div>
+        </aside>
+
+        {/* Conversation */}
+        <section className="am-conversation">
+          <header className="am-research-head">
+            <div>
+              <div className="am-eyebrow">Legal Research</div>
+              <h1 className="am-studio-title" style={{ margin: '2px 0 0' }}>Statutory Research Desk</h1>
+            </div>
+            <div className="am-page-actions" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+              {activePdfName && (
+                <span className="am-doc-chip">
+                  <Icon name="file" size={14} /> {activePdfName}
+                  <button onClick={handleRemovePdf} title="Remove document"><Icon name="x" size={13} /></button>
+                </span>
+              )}
+              {activePdfName && (
+                <button className="am-btn" onClick={handleAnalyseDocument} disabled={isAnalysing}>
+                  {isAnalysing ? 'Analysing…' : 'Analyse Document'}
+                </button>
+              )}
+              <button
+                className="am-btn"
+                onClick={() => {
+                  if (!activeChatId) { toast.error('Start a research session first'); return; }
+                  fileInputRef.current?.click();
+                }}
+                disabled={isUploadingPdf}
+              >
+                <Icon name="upload" size={15} /> {isUploadingPdf ? 'Uploading…' : 'Attach Document'}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.gif,.tiff"
+                style={{ display: 'none' }}
+                onChange={handlePdfUpload}
+              />
+            </div>
+          </header>
+
+          <div className="am-thread">
+            {!activeChatId || messages.length === 0 ? (
+              <div className="am-research-welcome">
+                <div className="am-workflow-icon" style={{ background: 'var(--am-navy-tint)', color: 'var(--am-navy)' }}><Icon name="book" size={20} /></div>
+                <h2 className="am-instruments-title" style={{ marginTop: 14 }}>Ask about the BNS, BNSS or BSA</h2>
+                <p className="am-subtitle" style={{ maxWidth: 560 }}>
+                  Answers are drawn from the official Gazette text of the new criminal codes. Every section cited is checked
+                  against that text, old IPC/CrPC equivalents are noted, and no case law is invented.
+                </p>
+                <div className="am-suggestions">
+                  {SUGGESTIONS.map(s => (
+                    <button key={s} className="am-suggestion" onClick={async () => {
+                      if (!activeChatId) await handleNewChat();
+                      setInputMessage(s);
+                    }}>
+                      {s}<Icon name="arrowRight" size={15} />
+                    </button>
                   ))}
                 </div>
-              )
-            )
-          )}
-        </div>
-      </div>
-
-      {/* ── MAIN CHAT AREA ──────────────────────────────────────────────────── */}
-      <div className="lawgpt-main">
-
-        {/* Chat Header */}
-        <div className="lawgpt-header">
-          <div className="lawgpt-header-left">
-            <h2 className="lawgpt-title">⚖️ LawGPT Workspace</h2>
-            <span className="lawgpt-subtitle">AI Legal Research Assistant for Indian Advocates</span>
-          </div>
-          <div className="lawgpt-header-right">
-            {activePdfName && (
-              <div className="lawgpt-pdf-badge">
-                📄 {activePdfName}
-                <button onClick={handleRemovePdf} className="lawgpt-pdf-remove">×</button>
               </div>
-            )}
-            {activePdfName && (
-              <button
-                className="lawgpt-analyse-btn"
-                onClick={handleAnalyseDocument}
-                disabled={isAnalysing}
-              >
-                {isAnalysing ? '⏳ Analysing...' : '📊 Analyse Document'}
-              </button>
-            )}
-            <button
-              className="lawgpt-upload-btn"
-              onClick={() => {
-                if (!activeChatId) { toast.error('Start a new chat first'); return; }
-                fileInputRef.current?.click();
-              }}
-              disabled={isUploadingPdf}
-            >
-              {isUploadingPdf ? 'Uploading...' : '📎 Upload Document'}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.gif,.tiff"
-              style={{ display: 'none' }}
-              onChange={handlePdfUpload}
-            />
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div className="lawgpt-messages">
-          {!activeChatId ? (
-            <div className="lawgpt-welcome">
-              <div className="lawgpt-welcome-icon">⚖️</div>
-              <h3>Welcome to LawGPT Workspace</h3>
-              <p>Your AI-powered legal research assistant for Indian law.</p>
-              <ul className="lawgpt-welcome-features">
-                <li>💬 Ask legal research questions</li>
-                <li>📄 Upload judgments, agreements, petitions</li>
-                <li>🔍 Get relevant IPC / BNS / CrPC sections</li>
-                <li>📝 Analyze clauses and identify risks</li>
-                <li>💾 All sessions saved automatically</li>
-              </ul>
-              <button className="lawgpt-start-btn" onClick={handleNewChat}>
-                + Start New Research Session
-              </button>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="lawgpt-welcome">
-              <div className="lawgpt-welcome-icon">💬</div>
-              <h3>New Research Session</h3>
-              <p>Ask a legal question or upload a PDF to begin.</p>
-              <div className="lawgpt-suggestions">
-                {[
-                  'Explain Section 138 of the Negotiable Instruments Act',
-                  'What are the grounds for divorce under Hindu Marriage Act?',
-                  'Summarize the IT Act provisions on cybercrime',
-                  'What is the procedure for filing a writ petition?'
-                ].map((suggestion, i) => (
-                  <button
-                    key={i}
-                    className="lawgpt-suggestion-chip"
-                    onClick={() => { setInputMessage(suggestion); }}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <>
-              {messages.map((msg, index) => (
-                <div key={index} className={`lawgpt-message ${msg.role}`}>
-                  <div className="lawgpt-message-avatar">
-                    {msg.role === 'user' ? '👤' : '⚖️'}
-                  </div>
-                  <div className="lawgpt-message-body">
-                    <div
-                      className="lawgpt-message-content"
-                      dangerouslySetInnerHTML={{ __html: formatMessageContent(msg.content) }}
-                    />
-                    {msg.cited_sections && msg.cited_sections.length > 0 && (
-                      <div className="lawgpt-cited-sections">
-                        <span className="lawgpt-cited-label">Referenced Sections:</span>
-                        {msg.cited_sections.map((s, i) => (
-                          <span key={i} className="lawgpt-cited-tag">
-                            {s.section_number} — {s.act_short}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div className="lawgpt-message-time">{formatTime(msg.timestamp)}</div>
-                  </div>
-                </div>
-              ))}
-
-              {isLoading && (
-                <div className="lawgpt-message assistant">
-                  <div className="lawgpt-message-avatar">⚖️</div>
-                  <div className="lawgpt-message-body">
-                    <div className="lawgpt-typing">
-                      <span></span><span></span><span></span>
+            ) : (
+              <>
+                {messages.map((msg, index) => {
+                  const [body, note] = msg.role === 'assistant' ? splitVerificationNote(msg.content) : [msg.content, null];
+                  return (
+                    <div key={index} className={`am-msg ${msg.role}`}>
+                      {msg.role === 'user' ? (
+                        <div className="am-msg-question">{msg.content}</div>
+                      ) : (
+                        <div className="am-msg-answer">
+                          <div className="am-msg-content" dangerouslySetInnerHTML={{ __html: formatMessageContent(body) }} />
+                          {note && (
+                            <div className="am-callout">
+                              <Icon name="alert" size={16} />
+                              <div>{note}</div>
+                            </div>
+                          )}
+                          {msg.cited_sections && msg.cited_sections.length > 0 && (
+                            <div className="am-citations">
+                              <span className="am-citations-label">
+                                <Icon name="checkCircle" size={14} /> Verified against the official text
+                              </span>
+                              {msg.cited_sections.map((s, i) => (
+                                <span key={i} className="am-citation-chip" title={s.title || ''}>
+                                  {s.act_short} {String(s.section_number).replace(/^Section\s+/, '')}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="am-msg-time">{formatTime(msg.timestamp)}</div>
+                        </div>
+                      )}
                     </div>
+                  );
+                })}
+                {isLoading && (
+                  <div className="am-msg assistant">
+                    <div className="am-msg-answer am-msg-pending">Reading the statutes and checking citations…</div>
                   </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </div>
-
-        {/* Input Area */}
-        {activeChatId && (
-          <div className="lawgpt-input-area">
-            <textarea
-              className="lawgpt-input"
-              placeholder="Ask a legal question... (Shift+Enter for new line)"
-              value={inputMessage}
-              onChange={e => setInputMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows={2}
-              disabled={isLoading}
-            />
-            <button
-              className="lawgpt-send-btn"
-              onClick={handleSendMessage}
-              disabled={isLoading || !inputMessage.trim()}
-            >
-              {isLoading ? '...' : '→'}
-            </button>
+                )}
+                <div ref={messagesEndRef} />
+              </>
+            )}
           </div>
-        )}
+
+          {activeChatId && (
+            <div className="am-composer-wrap">
+              <div className="am-composer">
+                <textarea
+                  placeholder="Ask a research question — include the offence date if old or new law may apply"
+                  value={inputMessage}
+                  onChange={e => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={2}
+                  disabled={isLoading}
+                />
+                <button className="am-btn am-btn-primary" onClick={handleSendMessage} disabled={isLoading || !inputMessage.trim()} aria-label="Send">
+                  <Icon name="send" size={16} />
+                </button>
+              </div>
+              <div className="am-composer-note">Research aid for advocates — verify before filing. Enter to send, Shift+Enter for a new line.</div>
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </Layout>
   );
 }

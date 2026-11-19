@@ -1,0 +1,111 @@
+/* ==========================================================================
+   Amicus One — overrides for page structures that predate the redesign
+   (Documents, Clients, Billing, Settings, Admin, Draft Review, Translate,
+   firm pages, auth pages). Loaded after amicus.css.
+   ========================================================================== */
+
+/* Page containers and headers */
+.page-container, .firm-page, .translate-root, .dashboard-page {
+  padding: 48px 56px 64px !important; max-width: 1240px; margin: 0 !important; box-sizing: border-box; background: transparent !important;
+}
+.page-header, .firm-page-header, .translate-header {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  padding: 0 0 28px !important; margin: 0 0 32px !important; border-bottom: 1px solid var(--am-line) !important; background: none !important;
+}
+.page-title, .firm-page-title, .translate-title {
+  font-family: var(--am-serif) !important; font-size: 36px !important; font-weight: 500 !important; line-height: 1.15 !important;
+  color: var(--am-ink) !important; margin: 0 !important; letter-spacing: -0.01em; background: none !important; -webkit-text-fill-color: currentColor !important;
+}
+.page-subtitle, .firm-page-subtitle, .translate-subtitle { font-size: 15.5px !important; color: var(--am-ink-2) !important; margin: 8px 0 0 !important; }
+.section-title, .firm-section-title, .settings-form-title, .translate-section-title {
+  font-family: var(--am-sans) !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0.08em; text-transform: uppercase; color: var(--am-ink-2) !important;
+}
+
+/* Cards: hairline, 10px radius, white */
+.doc-card, .client-card, .firm-card, .firm-stat-card, .dash-stat-card, .settings-card, .billing-card, .credit-card, .stat-card, .admin-stat-card,
+.translate-card, .freeform-card, .link-client-section, .edit-section, .settings-form, .firm-form, .usage-card, .plan-card, .lsa-container, .firm-action-card {
+  background: var(--am-canvas) !important; border: 1px solid var(--am-line) !important; border-radius: var(--am-radius) !important; box-shadow: none !important;
+}
+
+/* Tables */
+.firm-table-wrap, .admin-table-wrap { border: 1px solid var(--am-line) !important; border-radius: var(--am-radius) !important; overflow: auto; box-shadow: none !important; background: var(--am-canvas) !important; }
+.firm-table, .admin-table { width: 100%; border-collapse: collapse; }
+.firm-table th, .admin-table th {
+  text-align: left; font-size: 12.5px !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--am-ink-2) !important;
+  padding: 13px 18px !important; background: var(--am-surface) !important; border-bottom: 1px solid var(--am-line) !important;
+}
+.firm-table td, .admin-table td { padding: 14px 18px !important; font-size: 14.5px; color: var(--am-ink-2) !important; border-bottom: 1px solid var(--am-line) !important; background: transparent !important; }
+.firm-table tr:last-child td, .admin-table tr:last-child td { border-bottom: 0 !important; }
+
+/* Modals */
+.modal-overlay { background: rgba(17, 24, 39, 0.35) !important; backdrop-filter: none !important; }
+.modal-box, .modal-content { background: var(--am-canvas) !important; border: 1px solid var(--am-line) !important; border-radius: 14px !important; box-shadow: 0 20px 40px rgba(17, 24, 39, 0.12) !important; }
+.modal-header { border-bottom: 1px solid var(--am-line) !important; }
+.modal-title { font-family: var(--am-serif) !important; font-size: 22px !important; font-weight: 500 !important; color: var(--am-ink) !important; }
+.modal-close { color: var(--am-ink-3) !important; background: none !important; border: 0 !important; }
+
+/* Form controls inside legacy pages */
+.page-container input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.page-container select, .page-container textarea,
+.firm-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.firm-page select, .firm-page textarea,
+.translate-root select, .freeform-wrap textarea, .freeform-wrap select,
+.link-client-select, .language-select, .filter-select, .search-input {
+  border: 1px solid var(--am-line) !important; border-radius: var(--am-radius-sm) !important; background: var(--am-canvas) !important; color: var(--am-ink) !important; font-family: var(--am-sans) !important;
+}
+.btn-outline, .dash-action-btn.secondary, .firm-btn-secondary {
+  background: var(--am-canvas) !important; color: var(--am-ink) !important; border: 1px solid var(--am-line) !important; border-radius: var(--am-radius-sm) !important; box-shadow: none !important;
+}
+.dash-action-btn.primary, .firm-btn-primary, .btn-add, .add-client-btn, .firm-btn {
+  background: var(--am-navy) !important; color: #fff !important; border: 1px solid var(--am-navy) !important; border-radius: var(--am-radius-sm) !important; box-shadow: none !important;
+}
+.translate-lang-btn, .length-option {
+  border: 1px solid var(--am-line) !important; background: var(--am-canvas) !important; color: var(--am-ink-2) !important; border-radius: var(--am-radius-sm) !important; box-shadow: none !important;
+}
+.translate-lang-btn.active, .length-option.selected { border-color: var(--am-navy) !important; background: var(--am-navy-tint) !important; color: var(--am-navy) !important; }
+.translate-dropzone, .freeform-dropzone { border: 1.5px dashed var(--am-line-strong) !important; background: var(--am-surface) !important; border-radius: var(--am-radius) !important; }
+.translate-dropzone:hover, .freeform-dropzone:hover, .translate-dropzone.dragover { border-color: var(--am-navy) !important; background: var(--am-navy-tint) !important; }
+.translate-dropzone-icon, .freeform-dropzone-icon { color: var(--am-ink-3); }
+.translate-notice, .credit-notice, .freeform-credit-note {
+  background: var(--am-surface) !important; border: 1px solid var(--am-line) !important; color: var(--am-ink-2) !important; border-radius: var(--am-radius-sm) !important;
+}
+
+/* Drafting result (paper view) */
+.document-page { background: #fff !important; border: 1px solid var(--am-line) !important; box-shadow: none !important; font-family: var(--am-serif) !important; }
+.page-content, .page-line { font-family: var(--am-serif) !important; color: #1b1b1b !important; }
+.document-editor { font-family: var(--am-serif) !important; border: 1px solid var(--am-line) !important; border-radius: var(--am-radius-sm) !important; }
+.result-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding-bottom: 24px; border-bottom: 1px solid var(--am-line); margin-bottom: 28px; }
+
+/* Legal sections assistant (inside the studio) */
+.lsa-container { padding: 16px !important; margin: 4px 0 18px !important; }
+.lsa-chip, .lsa-added-tag { background: var(--am-navy-tint) !important; color: var(--am-navy) !important; border: 0 !important; border-radius: 5px !important; }
+.lsa-act-tag, .lsa-chip-act { font-family: var(--am-mono); font-size: 11px !important; background: var(--am-surface-2) !important; color: var(--am-ink-2) !important; border-radius: 4px !important; }
+
+/* Auth pages: white canvas, single centred card */
+.auth-page { background: var(--am-surface) !important; min-height: 100vh; }
+.auth-page * { --bg-input: var(--am-canvas); --text-primary: var(--am-ink); --border-color: var(--am-line); }
+.auth-card-new, .auth-choice-wrap { background: var(--am-canvas) !important; border: 1px solid var(--am-line) !important; border-radius: 14px !important; box-shadow: none !important; }
+.auth-logo-icon, .auth-choice-logo { color: var(--am-navy); display: flex; justify-content: center; margin-bottom: 10px !important; }
+.auth-brand {
+  font-family: var(--am-serif) !important; font-weight: 500 !important; font-size: 30px !important; color: var(--am-ink) !important;
+  background: none !important; -webkit-text-fill-color: currentColor !important; letter-spacing: -0.01em;
+}
+.auth-tagline, .auth-form-desc, .auth-choice-sub { color: var(--am-ink-3) !important; }
+.auth-form-title, .auth-choice-title { font-family: var(--am-serif) !important; font-weight: 500 !important; color: var(--am-ink) !important; }
+.auth-label { color: var(--am-ink-2) !important; font-weight: 500 !important; }
+.auth-page input {
+  background: var(--am-canvas) !important; color: var(--am-ink) !important; -webkit-text-fill-color: var(--am-ink) !important;
+  border: 1px solid var(--am-line) !important; border-radius: var(--am-radius-sm) !important;
+}
+.auth-page input:focus, .auth-input:focus { border-color: var(--am-navy) !important; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.10) !important; }
+.auth-link-btn, .auth-forgot-link { color: var(--am-navy) !important; }
+.auth-free-badge { background: var(--am-copper-tint) !important; color: var(--am-copper) !important; border: 0 !important; border-radius: 7px !important; }
+.auth-features { border-top: 1px solid var(--am-line) !important; }
+.auth-feature-item, .auth-choice-tag { background: var(--am-surface) !important; color: var(--am-ink-2) !important; border: 1px solid var(--am-line) !important; border-radius: 6px !important; }
+[class*="auth-choice-card"] { background: var(--am-canvas) !important; border: 1px solid var(--am-line) !important; border-radius: var(--am-radius) !important; color: var(--am-ink) !important; }
+[class*="auth-choice-card"]:hover { border-color: var(--am-navy) !important; }
+
+@media (max-width: 760px) {
+  .page-container, .firm-page, .translate-root, .dashboard-page { padding: 28px 18px 48px !important; }
+  .page-title, .firm-page-title, .translate-title { font-size: 28px !important; }
+}

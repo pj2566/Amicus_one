@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../../components/Icon';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import toast from 'react-hot-toast';
@@ -38,7 +39,7 @@ export default function JoinFirm() {
     <div className="auth-page">
       <div className="auth-card-new" style={{background: 'var(--bg-secondary)', borderColor: 'var(--border-color)'}}>
         <div className="auth-logo-wrap">
-          <div className="auth-logo-icon">🏛️</div>
+          <div className="auth-logo-icon"><Icon name="building" /></div>
           <h1 className="auth-brand">Amicus One</h1>
           <p className="auth-tagline">Join Your Law Firm</p>
         </div>

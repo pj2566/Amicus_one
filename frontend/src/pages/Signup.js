@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -35,9 +36,9 @@ export default function Signup() {
 
         {/* Logo */}
         <div className="auth-logo-wrap">
-          <div className="auth-logo-icon">⚖️</div>
+          <div className="auth-logo-icon"><Icon name="scale" /></div>
           <h1 className="auth-brand">Amicus One</h1>
-          <p className="auth-tagline">The Modern AI Workspace for Legal Professionals</p>
+          <p className="auth-tagline">Chambers workspace for Indian advocates</p>
         </div>
 
         {/* Form */}
@@ -45,7 +46,7 @@ export default function Signup() {
           <h2 className="auth-form-title">Create your lawyer account</h2>
 
           <div className="auth-free-badge">
-            🎉 Free to start — 3 credits included
+            Free to start — 3 credits included
           </div>
 
           <div className="auth-field">
@@ -106,10 +107,10 @@ export default function Signup() {
 
         {/* Features */}
         <div className="auth-features">
-          <div className="auth-feature-item">✍️ AI Document Drafting</div>
-          <div className="auth-feature-item">⚖️ LawGPT Research</div>
-          <div className="auth-feature-item">🌐 Document Translator</div>
-          <div className="auth-feature-item">📄 80+ Document Types</div>
+          <div className="auth-feature-item">Guided Drafting</div>
+          <div className="auth-feature-item">Statutory Research</div>
+          <div className="auth-feature-item">Vernacular Translation</div>
+          <div className="auth-feature-item">64 Standard Instruments</div>
         </div>
 
       </div>

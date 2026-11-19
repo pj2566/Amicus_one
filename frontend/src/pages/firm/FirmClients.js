@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import React, { useEffect, useState, useCallback } from 'react';
+import Icon from '../../components/Icon';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api';
 import FirmLayout from './FirmLayout';
@@ -127,8 +128,8 @@ export default function FirmClients() {
   };
 
   const avatarColors = [
-    '#c9a84c', '#4c9ac9', '#4cc97a', '#c94c8a',
-    '#9a4cc9', '#c94c4c', '#4cc9c9', '#c98a4c'
+    '#1E3A8A', '#92400E', '#166534', '#7F1D1D',
+    '#475569', '#c94c4c', '#4cc9c9', '#c98a4c'
   ];
 
   const getAvatarColor = (name) => {
@@ -144,7 +145,7 @@ export default function FirmClients() {
           <title>${doc.document_type_name}</title>
           <style>
             body { font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; line-height: 1.7; color: #1a1a1a; }
-            h1 { color: #1a1a2e; border-bottom: 2px solid #c9a84c; padding-bottom: 10px; }
+            h1 { color: #1a1a2e; border-bottom: 2px solid #1E3A8A; padding-bottom: 10px; }
             pre { white-space: pre-wrap; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
           </style>
         </head>
@@ -228,7 +229,7 @@ export default function FirmClients() {
         {/* Page Header */}
         <div className="page-header">
           <div>
-            <h1 className="page-title">👥 Firm Clients</h1>
+            <h1 className="page-title">Firm Clients</h1>
             <p className="page-subtitle">
               Manage client records for {userProfile?.name || 'your firm'}
             </p>
@@ -243,7 +244,7 @@ export default function FirmClients() {
           <input
             type="text"
             className="filter-search"
-            placeholder="🔍 Search clients by name, email or phone..."
+            placeholder="Search clients by name, email or phone..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -259,7 +260,7 @@ export default function FirmClients() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="empty-page-state">
-            <div className="empty-icon">👥</div>
+            <div className="empty-icon"><Icon name="users" /></div>
             <h3>{searchQuery ? 'No clients found' : 'No clients yet'}</h3>
             <p>
               {searchQuery
@@ -298,14 +299,14 @@ export default function FirmClients() {
                   </div>
                 </div>
                 {client.phone && (
-                  <div className="client-detail">📞 {client.phone}</div>
+                  <div className="client-detail">{client.phone}</div>
                 )}
                 {client.address && (
-                  <div className="client-detail">📍 {client.address}</div>
+                  <div className="client-detail">{client.address}</div>
                 )}
                 {client.previous_matters && (
                   <div className="client-matters">
-                    ⚖️ {client.previous_matters.slice(0, 60)}
+                    {client.previous_matters.slice(0, 60)}
                     {client.previous_matters.length > 60 ? '...' : ''}
                   </div>
                 )}
@@ -316,13 +317,13 @@ export default function FirmClients() {
                       className="client-btn edit"
                       onClick={e => { e.stopPropagation(); handleOpenEdit(client); }}
                     >
-                      ✏️
+                      
                     </button>
                     <button
                       className="client-btn delete"
                       onClick={e => { e.stopPropagation(); handleDelete(client.id); }}
                     >
-                      🗑️
+                      
                     </button>
                   </div>
                 </div>
@@ -337,7 +338,7 @@ export default function FirmClients() {
             <div className="modal-box" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3 className="modal-title">
-                  {editingClient ? '✏️ Edit Client' : '+ Add New Client'}
+                  {editingClient ? 'Edit Client' : '+ Add New Client'}
                 </h3>
                 <button className="modal-close" onClick={() => setShowForm(false)}>×</button>
               </div>
@@ -445,31 +446,31 @@ export default function FirmClients() {
                 <div className="client-view-grid">
                   {viewClient.phone && (
                     <div className="client-view-item">
-                      <span className="cvi-label">📞 Phone</span>
+                      <span className="cvi-label">Phone</span>
                       <span className="cvi-value">{viewClient.phone}</span>
                     </div>
                   )}
                   {viewClient.email && (
                     <div className="client-view-item">
-                      <span className="cvi-label">✉️ Email</span>
+                      <span className="cvi-label">Email</span>
                       <span className="cvi-value">{viewClient.email}</span>
                     </div>
                   )}
                   {viewClient.address && (
                     <div className="client-view-item full">
-                      <span className="cvi-label">📍 Address</span>
+                      <span className="cvi-label">Address</span>
                       <span className="cvi-value">{viewClient.address}</span>
                     </div>
                   )}
                   {viewClient.previous_matters && (
                     <div className="client-view-item full">
-                      <span className="cvi-label">⚖️ Previous Matters</span>
+                      <span className="cvi-label">Previous Matters</span>
                       <span className="cvi-value">{viewClient.previous_matters}</span>
                     </div>
                   )}
                   {viewClient.notes && (
                     <div className="client-view-item full">
-                      <span className="cvi-label">📝 Notes</span>
+                      <span className="cvi-label">Notes</span>
                       <span className="cvi-value">{viewClient.notes}</span>
                     </div>
                   )}
@@ -479,7 +480,7 @@ export default function FirmClients() {
               {/* Client Documents */}
               <div className="client-docs-section">
                 <h4 className="client-docs-title">
-                  📄 Linked Documents
+                  Linked Documents
                   <span className="client-docs-count">{clientDocs.length}</span>
                 </h4>
                 {clientDocsLoading ? (
@@ -504,13 +505,13 @@ export default function FirmClients() {
                             className="client-doc-btn view-btn"
                             onClick={() => handleViewDoc(doc)}
                           >
-                            👁 View
+                            View
                           </button>
                           <button
                             className="client-doc-btn download-btn"
                             onClick={() => handleDownloadDoc(doc)}
                           >
-                            ⬇ PDF
+                            PDF
                           </button>
                         </div>
                       </div>
@@ -524,13 +525,13 @@ export default function FirmClients() {
                   className="dash-action-btn secondary"
                   onClick={() => handleOpenEdit(viewClient)}
                 >
-                  ✏️ Edit
+                  Edit
                 </button>
                 <button
                   className="dash-action-btn danger"
                   onClick={() => handleDelete(viewClient.id)}
                 >
-                  🗑️ Delete
+                  Delete
                 </button>
               </div>
             </div>

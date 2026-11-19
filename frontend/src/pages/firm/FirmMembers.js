@@ -139,17 +139,17 @@ export default function FirmMembers() {
         {/* Header */}
         <div className="firm-page-header">
           <div>
-            <h1 className="firm-page-title">👥 Team Members</h1>
+            <h1 className="firm-page-title">Team Members</h1>
             <p className="firm-page-sub">
               Manage your firm's lawyers and staff —
-              <strong> 🪙 {firmCredits} credits in firm pool</strong>
+              <strong> {firmCredits} credits in firm pool</strong>
             </p>
           </div>
           <button
             className="firm-btn-primary"
             onClick={() => setShowAddForm(!showAddForm)}
           >
-            {showAddForm ? '✕ Cancel' : '+ Add Member'}
+            {showAddForm ? 'Cancel' : '+ Add Member'}
           </button>
         </div>
 
@@ -203,13 +203,13 @@ export default function FirmMembers() {
             className={`firm-tab ${activeTab === 'members' ? 'active' : ''}`}
             onClick={() => setActiveTab('members')}
           >
-            👥 Members ({members.length})
+            Members ({members.length})
           </button>
           <button
             className={`firm-tab ${activeTab === 'invites' ? 'active' : ''}`}
             onClick={() => setActiveTab('invites')}
           >
-            📨 Invite via Code
+            Invite via Code
           </button>
         </div>
 
@@ -233,14 +233,14 @@ export default function FirmMembers() {
                       <div className="firm-member-name-row">
                         <span className="firm-member-name-text">{m.name}</span>
                         <span className={`firm-role-badge ${m.firm_role}`}>
-                          {m.firm_role === 'admin' ? '👑 Admin' : '👤 Member'}
+                          {m.firm_role === 'admin' ? 'Admin' : 'Member'}
                         </span>
                       </div>
                       <div className="firm-member-email">{m.email}</div>
                       <div className="firm-member-meta">
-                        <span>🪙 {m.credits} personal credits</span>
-                        <span>📄 {m.documents_generated || 0} docs</span>
-                        <span>📅 Joined {formatDate(m.created_at)}</span>
+                        <span>{m.credits} personal credits</span>
+                        <span>{m.documents_generated || 0} docs</span>
+                        <span>Joined {formatDate(m.created_at)}</span>
                       </div>
                     </div>
 
@@ -261,7 +261,7 @@ export default function FirmMembers() {
                           disabled={distributingId === m.id}
                           onClick={() => handleDistributeCredits(m.id, m.name)}
                         >
-                          {distributingId === m.id ? '...' : '🪙 Give'}
+                          {distributingId === m.id ? '...' : 'Give'}
                         </button>
                       </div>
 
@@ -271,7 +271,7 @@ export default function FirmMembers() {
                             className="firm-btn-outline"
                             onClick={() => { setResetMemberId(m.id); setResetPassword(''); }}
                           >
-                            🔑 Reset
+                            Reset
                           </button>
                           <button
                             className="firm-btn-danger"
@@ -306,7 +306,7 @@ export default function FirmMembers() {
                   className="firm-invite-input"
                 />
                 <button type="submit" className="firm-btn-primary" disabled={inviteLoading}>
-                  {inviteLoading ? 'Generating...' : '📨 Generate Invite Code'}
+                  {inviteLoading ? 'Generating...' : 'Generate Invite Code'}
                 </button>
               </form>
 
@@ -324,7 +324,7 @@ export default function FirmMembers() {
                       toast.success('Code copied!');
                     }}
                   >
-                    📋 Copy Code
+                    Copy Code
                   </button>
                 </div>
               )}
@@ -366,7 +366,7 @@ export default function FirmMembers() {
         {resetMemberId && (
           <div className="firm-modal-overlay" onClick={() => setResetMemberId(null)}>
             <div className="firm-modal" onClick={e => e.stopPropagation()}>
-              <h3 className="firm-modal-title">🔑 Reset Member Password</h3>
+              <h3 className="firm-modal-title">Reset Member Password</h3>
               <form onSubmit={handleResetPassword}>
                 <div className="firm-form-field">
                   <label>New Password</label>

@@ -28,6 +28,8 @@ import JoinFirm from './pages/firm/JoinFirm';
 import DraftReview from './pages/DraftReview';
 import './App.css';
 import './styles/amicus.css';
+import './styles/amicus-legacy.css';
+import './styles/amicus-pages.css';
 
 function ProtectedRoute({ children }) {
   const { user, userProfile } = useAuth();

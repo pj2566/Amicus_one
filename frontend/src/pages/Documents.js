@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
@@ -61,13 +62,13 @@ export default function Documents() {
 
   const getCategoryIcon = (category) => {
     const icons = {
-      'Property Law': '🏠', 'Corporate Law': '🏢', 'Criminal Law': '⚖️',
-      'Employment Law': '💼', 'Taxation Law': '💰', 'Consumer Law': '🛒',
-      'Cyber Law': '💻', 'Startup Law': '🚀', 'Civil Litigation': '📋',
-      'Arbitration Law': '🤝', 'Intellectual Property Law': '💡',
-      'Divorce / Family Law': '👨‍👩‍👧'
+      'Property Law': '', 'Corporate Law': '', 'Criminal Law': '',
+      'Employment Law': '', 'Taxation Law': '', 'Consumer Law': '',
+      'Cyber Law': '', 'Startup Law': '', 'Civil Litigation': '',
+      'Arbitration Law': '', 'Intellectual Property Law': '',
+      'Divorce / Family Law': '‍‍'
     };
-    return icons[category] || '📄';
+    return icons[category] || '';
   };
 
   return (
@@ -77,14 +78,14 @@ export default function Documents() {
         {/* Page Header */}
         <div className="page-header">
           <div>
-            <h1 className="page-title">📄 Documents</h1>
-            <p className="page-subtitle">All your generated legal documents</p>
+            <h1 className="page-title">Matter Archive</h1>
+            <p className="page-subtitle">Every instrument prepared in your chambers</p>
           </div>
           <button
             className="dash-action-btn primary"
             onClick={() => navigate('/generate')}
           >
-            ✍️ New Document
+            New Document
           </button>
         </div>
 
@@ -93,7 +94,7 @@ export default function Documents() {
           <input
             type="text"
             className="filter-search"
-            placeholder="🔍 Search documents..."
+            placeholder="Search documents..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -133,7 +134,7 @@ export default function Documents() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="empty-page-state">
-            <div className="empty-icon">📄</div>
+            <div className="empty-icon"><Icon name="file" /></div>
             <h3>No documents found</h3>
             <p>
               {searchQuery || filterCategory !== 'All'
@@ -163,20 +164,20 @@ export default function Documents() {
                   </div>
                 </div>
                 <div className="doc-card-date">
-                  📅 {formatDate(doc.created_at)}
+                  {formatDate(doc.created_at)}
                 </div>
                 <div className="doc-card-actions">
                   <button
                     className="doc-btn view"
                     onClick={() => setViewDoc(doc)}
                   >
-                    👁 View
+                    View
                   </button>
                   <button
                     className="doc-btn generate"
                     onClick={() => navigate('/generate')}
                   >
-                    ✍️ New Similar
+                    New Similar
                   </button>
                 </div>
               </div>
