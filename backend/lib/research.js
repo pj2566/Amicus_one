@@ -287,7 +287,11 @@ const MAX_DRAFT_CHARS = 60000;
 
 const quotesNotInDrafts = (review, drafts) => {
   const corpus = ` ${normalise(drafts.map(d => d.text).join(' '))} `;
-  const quotes = [...review.matchAll(/[“"]([^”"]{30,400})[”"]/g)].map(m => m[1]);
+  // Consume quotes in pairs first, then keep the long ones; filtering by length inside the
+  // regex would let a short quote's closing mark pair with the next opening mark
+  const quotes = [...review.matchAll(/“([^”]*)”|"([^"]*)"/g)]
+    .map(m => m[1] ?? m[2])
+    .filter(q => q.length >= 30 && q.length <= 400);
   return quotes.filter(q => {
     const words = normalise(q).trim().split(' ');
     // Allow elisions: check overlapping 6-word windows; most must appear verbatim
