@@ -6,6 +6,9 @@ const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const supabase = require('../config/supabase');
 
+const INDIAN_LANGUAGES = ['Hindi', 'Marathi', 'Bengali', 'Tamil', 'Kannada', 'Telugu', 'Gujarati', 'Malayalam', 'Punjabi', 'Odia', 'Urdu'];
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 // ── Multer setup ───────────────────────────────────────────
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -16,11 +19,12 @@ const upload = multer({
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/msword',
       'text/plain',
+      ...IMAGE_TYPES,
     ];
     if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Unsupported file type. Please upload PDF, DOCX, or TXT'));
+      cb(new Error('Unsupported file type. Please upload PDF, DOCX, TXT or an image'));
     }
   },
 });
@@ -40,19 +44,24 @@ const authenticate = async (req, res, next) => {
 };
 
 // ── Helper: extract text from file ────────────────────────
+// Scanned PDFs (no text layer) and photos are transcribed by Gemini, which reads Indian scripts.
 const extractText = async (file) => {
   const mime = file.mimetype;
   if (mime === 'application/pdf') {
     const data = await pdfParse(file.buffer);
-    return data.text;
+    const textPerPage = (data.text || '').replace(/\s+/g, '').length / Math.max(data.numpages || 1, 1);
+    if (textPerPage >= 100) return { text: data.text, scanned: false };
+    return { text: await llm.transcribe(file.buffer, mime), scanned: true };
+  } else if (IMAGE_TYPES.includes(mime)) {
+    return { text: await llm.transcribe(file.buffer, mime), scanned: true };
   } else if (
     mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
     mime === 'application/msword'
   ) {
     const result = await mammoth.extractRawText({ buffer: file.buffer });
-    return result.value;
+    return { text: result.value, scanned: false };
   } else if (mime === 'text/plain') {
-    return file.buffer.toString('utf-8');
+    return { text: file.buffer.toString('utf-8'), scanned: false };
   }
   throw new Error('Unsupported file type');
 };
@@ -75,69 +84,76 @@ const splitIntoChunks = (text, chunkSize = 1500) => {
 };
 
 // ── Helper: translate a single chunk ──────────────────────
-const translateChunk = async (chunk, sourceLanguage, previousContext = '') => {
-  const contextNote = previousContext
-    ? `PREVIOUS CONTEXT (for continuity):\n${previousContext}\n\n`
-    : '';
+const translateChunk = async (chunk, sourceLanguage, targetLanguage, previousContext = '') => {
+  const intoIndian = targetLanguage !== 'English';
+  const system = `You are a professional legal translator for Indian courts and law firms, translating ${sourceLanguage} to ${targetLanguage}.
 
-  const prompt = `${contextNote}You are a professional legal document translator specializing in Indian law.
-Translate the following ${sourceLanguage} legal text to English.
+RULES
+1. Translate everything completely and faithfully. Do not summarise, explain, add or omit anything.
+2. Keep the structure exactly: headings, paragraph breaks, numbering of clauses and sub-clauses.
+3. Do not translate personal names, place names, company names or addresses; transliterate them into the target script only if the source is in a different script.
+4. Keep numbers, dates, amounts, section and case references as they are (e.g. "Section 318(4) BNS", "Rs. 5,00,000").
+5. ${intoIndian
+    ? `Use the formal legal vocabulary of ${targetLanguage} used in Indian courts and government gazettes. Where a legal term has no settled ${targetLanguage} equivalent, write the ${targetLanguage} rendering followed by the English term in brackets the first time it appears.`
+    : 'Use standard Indian legal English (e.g. "plaintiff", "respondent", "cognizable", "anticipatory bail").'}
+6. Output only the translation.`;
 
-CRITICAL RULES:
-1. Preserve ALL legal terminology accurately
-2. Maintain the exact same document structure and formatting
-3. Keep paragraph breaks and numbering intact
-4. Maintain continuity with the previous context if provided
-5. Do NOT add explanations or comments
-6. Do NOT summarize — translate everything completely
-7. Preserve party names, dates, amounts as-is
-
-TEXT TO TRANSLATE:
-${chunk}
-
-ENGLISH TRANSLATION:`;
+  const user = `${previousContext ? `END OF THE PREVIOUS TRANSLATED PART (for continuity only, do not repeat it):\n${previousContext}\n\n` : ''}TEXT TO TRANSLATE:\n${chunk}`;
 
   const response = await llm.chat({
-    messages: [{ role: 'user', content: prompt }],
-    maxTokens: 2000,
+    system,
+    messages: [{ role: 'user', content: user }],
+    // Indian scripts use several tokens per word, so leave generous room
+    maxTokens: 8000,
     temperature: 0.1,
   });
 
   return response.trim();
 };
 
+// ── Credits: firm members draw from the firm pool, everyone else from their own balance ──
+const getCreditSource = async (userId) => {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('credits, email, is_firm_member, firm_id')
+    .eq('id', userId)
+    .single();
+  if (!profile) return null;
+  if (profile.is_firm_member && profile.firm_id) {
+    const { data: firm } = await supabase.from('firm_profiles').select('id, total_credits').eq('id', profile.firm_id).single();
+    return { profile, firm, available: firm?.total_credits || 0 };
+  }
+  return { profile, firm: null, available: profile.credits || 0 };
+};
+
 // ── POST /api/translate/document ──────────────────────────
 router.post('/document', authenticate, upload.single('file'), async (req, res) => {
   try {
-    const { sourceLanguage } = req.body;
+    const sourceLanguage = req.body.sourceLanguage;
+    const targetLanguage = req.body.targetLanguage || 'English';
     const file = req.file;
 
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
     if (!sourceLanguage) return res.status(400).json({ error: 'Source language required' });
 
-    const validLanguages = ['Hindi', 'Marathi', 'Bengali', 'Tamil', 'Kannada', 'Telugu'];
-    if (!validLanguages.includes(sourceLanguage)) {
-      return res.status(400).json({ error: 'Invalid source language' });
+    const valid = ['English', ...INDIAN_LANGUAGES];
+    if (!valid.includes(sourceLanguage) || !valid.includes(targetLanguage)) {
+      return res.status(400).json({ error: 'Invalid language' });
+    }
+    if (sourceLanguage === targetLanguage || (sourceLanguage !== 'English' && targetLanguage !== 'English')) {
+      return res.status(400).json({ error: 'Translation must be from or into English' });
     }
 
-    // Check credits
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('credits, email')
-      .eq('id', req.user.id)
-      .single();
-
-    if (profileError || !profile) {
-      return res.status(400).json({ error: 'Profile not found' });
-    }
-    if (profile.credits <= 0) {
-      return res.status(402).json({ error: 'No credits remaining' });
+    const credits = await getCreditSource(req.user.id);
+    if (!credits) return res.status(400).json({ error: 'Profile not found' });
+    if (credits.available <= 0) {
+      return res.status(402).json({ error: credits.firm ? 'No firm credits remaining. Contact your firm admin.' : 'No credits remaining' });
     }
 
     // Extract text
-    let originalText;
+    let originalText, scanned;
     try {
-      originalText = await extractText(file);
+      ({ text: originalText, scanned } = await extractText(file));
     } catch (err) {
       return res.status(400).json({ error: 'Could not read file: ' + err.message });
     }
@@ -147,13 +163,13 @@ router.post('/document', authenticate, upload.single('file'), async (req, res) =
     }
 
     // Split into chunks
-    const chunks = splitIntoChunks(originalText, 2000);
+    const chunks = splitIntoChunks(originalText, 6000);
     const translatedChunks = [];
     let previousContext = '';
 
     // Translate each chunk with context
     for (let i = 0; i < chunks.length; i++) {
-      const translated = await translateChunk(chunks[i], sourceLanguage, previousContext);
+      const translated = await translateChunk(chunks[i], sourceLanguage, targetLanguage, previousContext);
       translatedChunks.push(translated);
       // Pass last 300 chars as context for next chunk
       previousContext = translated.slice(-300);
@@ -162,19 +178,21 @@ router.post('/document', authenticate, upload.single('file'), async (req, res) =
     const translatedText = translatedChunks.join('\n\n');
 
     // Deduct credit
-    await supabase
-      .from('profiles')
-      .update({ credits: profile.credits - 1 })
-      .eq('id', req.user.id);
+    if (credits.firm) {
+      await supabase.from('firm_profiles').update({ total_credits: credits.available - 1 }).eq('id', credits.firm.id);
+    } else {
+      await supabase.from('profiles').update({ credits: credits.available - 1 }).eq('id', req.user.id);
+    }
 
     // Save to translated_documents
     const { data: savedDoc, error: saveError } = await supabase
       .from('translated_documents')
       .insert({
         user_id: req.user.id,
-        user_email: profile.email,
+        user_email: credits.profile.email,
         original_file_name: file.originalname,
         source_language: sourceLanguage,
+        target_language: targetLanguage,
         original_text: originalText.slice(0, 50000),
         translated_text: translatedText.slice(0, 100000),
         status: 'completed',
@@ -190,8 +208,11 @@ router.post('/document', authenticate, upload.single('file'), async (req, res) =
       success: true,
       documentId: savedDoc?.id,
       translatedText,
+      sourceLanguage,
+      targetLanguage,
+      scanned,
       chunksProcessed: chunks.length,
-      creditsRemaining: profile.credits - 1,
+      creditsRemaining: credits.available - 1,
     });
 
   } catch (err) {
@@ -205,7 +226,7 @@ router.get('/history', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('translated_documents')
-      .select('id, original_file_name, source_language, created_at, status')
+      .select('id, original_file_name, source_language, target_language, created_at, status')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false })
       .limit(20);

@@ -2,20 +2,30 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
 const { verifyToken } = require('./auth');
-const llm = require('../lib/llm');
+const { suggestSections } = require('../lib/research');
 
 // Search legal sections
 router.get('/search', verifyToken, async (req, res) => {
   try {
-    const { query, tags } = req.query;
+    const { tags } = req.query;
+    // Characters with meaning in PostgREST filter syntax are stripped before building .or()
+    const query = String(req.query.query || '').replace(/[,()%*\\:"']/g, ' ').trim();
 
     if (!query || query.length < 2) {
       return res.json({ sections: [] });
     }
 
+    // Verified official text (BNS/BNSS/BSA): match "318", "BNS 318" or words in the title
+    const numberMatch = query.match(/^(?:(BNSS|BNS|BSA)\s*)?(?:s(?:ection|ec)?\.?\s*)?(\d+[A-Z]?)$/i);
+    let statuteQuery = supabase.from('statute_sections').select('id, act, act_name, section, title').limit(20);
+    statuteQuery = numberMatch
+      ? statuteQuery.eq('section', numberMatch[2].toUpperCase()).in('act', numberMatch[1] ? [numberMatch[1].toUpperCase()] : ['BNS', 'BNSS', 'BSA'])
+      : statuteQuery.ilike('title', `%${query}%`);
+
     let supabaseQuery = supabase
       .from('legal_sections')
       .select('*')
+      .not('act_short', 'in', '(BNS,BNSS,BSA)')
       .limit(50);
 
     // Filter by category tags if provided
@@ -36,15 +46,23 @@ router.get('/search', verifyToken, async (req, res) => {
       .overlaps('keywords', [query.toLowerCase()])
       .limit(20);
 
-    const [mainResult, keywordResult] = await Promise.all([
+    const [statuteResult, mainResult, keywordResult] = await Promise.all([
+      statuteQuery,
       supabaseQuery,
       keywordQuery
     ]);
 
+    // Verified sections first, in the same shape as legal_sections rows
+    const verified = (statuteResult.data || []).map(s => ({
+      id: s.id, section_number: `Section ${s.section}`, act_short: s.act, act_name: s.act_name,
+      description: s.title, verified_text: true
+    }));
+
     // Combine and deduplicate results
     const allSections = [
+      ...verified,
       ...(mainResult.data || []),
-      ...(keywordResult.data || [])
+      ...(keywordResult.data || []).filter(s => !['BNS', 'BNSS', 'BSA'].includes(s.act_short))
     ];
 
     const seen = new Set();
@@ -70,78 +88,8 @@ router.post('/suggest', verifyToken, async (req, res) => {
       return res.json({ suggestions: [] });
     }
 
-    // Get all sections for this category
-    const categoryTagMap = {
-      'Criminal Law': 'criminal',
-      'Cyber Law': 'cyber',
-      'Taxation Law': 'taxation',
-      'Civil Litigation': 'civil',
-      'Consumer Law': 'consumer',
-      'Divorce / Family Law': 'family'
-    };
-
-    const tag = categoryTagMap[categoryName] || 'criminal';
-
-    const { data: sections } = await supabase
-      .from('legal_sections')
-      .select('section_number, act_name, act_short, description')
-      .overlaps('category_tags', [tag])
-      .limit(200);
-
-    if (!sections || sections.length === 0) {
-      return res.json({ suggestions: [] });
-    }
-
-    // Ask AI to suggest relevant sections
-    const sectionsText = sections.map(s =>
-      `${s.section_number} ${s.act_short}: ${s.description}`
-    ).join('\n');
-
-    const prompt = `You are an expert Indian lawyer. Based on the case description below, suggest ALL relevant legal sections from the provided list.
-
-CASE DESCRIPTION: ${caseDescription}
-CATEGORY: ${categoryName}
-DOCUMENT TYPE: ${documentTypeName}
-
-AVAILABLE SECTIONS:
-${sectionsText}
-
-INSTRUCTIONS:
-- Select ALL sections that are relevant to this case — NO limit on number
-- Return ONLY a JSON array of section numbers exactly as they appear
-- Example: ["Section 420 IPC", "Section 66C IT Act", "Section 406 IPC"]
-- Do NOT suggest sections that are not in the list above
-- Do NOT add any explanation outside the JSON array
-
-Return JSON array only:`;
-
-    const reply = await llm.chat({
-      messages: [{ role: 'user', content: prompt }],
-      maxTokens: 200,
-      temperature: 0.1
-    });
-
-    let suggestedNumbers = [];
-    try {
-      const text = reply.trim();
-      // Extract JSON array from response
-      const match = text.match(/\[.*\]/s);
-      if (match) {
-        suggestedNumbers = JSON.parse(match[0]);
-      }
-    } catch (parseErr) {
-      console.error('Parse error:', parseErr);
-    }
-
-    // Get full section details for suggested sections
-    const suggestedSections = sections.filter(s =>
-      suggestedNumbers.some(num =>
-        s.section_number.toLowerCase().includes(num.toLowerCase()) ||
-        num.toLowerCase().includes(s.section_number.toLowerCase())
-      )
-    );
-
-    res.json({ suggestions: suggestedSections });
+    const { suggestions, regime } = await suggestSections({ caseDescription, categoryName, documentTypeName });
+    res.json({ suggestions, regime });
   } catch (err) {
     console.error('Suggest error:', err);
     res.status(500).json({ error: 'Suggestion failed', suggestions: [] });

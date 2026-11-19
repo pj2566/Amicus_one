@@ -1,0 +1,79 @@
+{
+  "_doc": "LawGPT evaluation cases. must_cite: list of any-of groups (each group needs one hit, matched on act + base section). must_not_cite: sections that must not be cited as verified. must_match / must_not_match: case-insensitive regexes on the reply. regime: expected old/new/unknown law detection. allow_case_mention: trap questions where echoing the user's case name is acceptable.",
+  "lawgpt": [
+    { "id": "off-murder", "cat": "offence", "q": "On 5 January 2025 a man stabbed his neighbour to death over a parking dispute. Which offence is made out and what is the punishment?", "must_cite": [["BNS 103", "BNS 101"]], "must_match": ["death", "imprisonment for life"], "regime": "new" },
+    { "id": "off-jobfraud", "cat": "offence", "q": "In March 2025 my client's neighbour took Rs 5 lakh from him promising a government job and then switched off his phone. What offence and what punishment?", "must_cite": [["BNS 318"]], "must_match": ["seven years"], "regime": "new" },
+    { "id": "off-snatching", "cat": "offence", "q": "In August 2024 two men on a motorcycle grabbed a woman's mobile phone from her hand and sped away. Which section applies?", "must_cite": [["BNS 304"]], "regime": "new" },
+    { "id": "off-cruelty", "cat": "offence", "q": "Since her marriage in 2024 the husband and mother-in-law have been beating my client and demanding Rs 10 lakh more dowry. What criminal provisions apply?", "must_cite": [["BNS 85", "BNS 86"]] },
+    { "id": "off-dowrydeath", "cat": "offence", "q": "A woman married in 2022 died of burns in December 2024 at her matrimonial home; her parents say she was harassed for dowry just before her death. What offence?", "must_cite": [["BNS 80"]], "must_match": ["seven years"], "regime": "new" },
+    { "id": "off-falsepromise", "cat": "offence", "q": "In 2025 a man had a sexual relationship with a woman for two years on a promise to marry her that he never intended to keep. Which BNS provision deals with this?", "must_cite": [["BNS 69"]], "regime": "new" },
+    { "id": "off-intimidation", "cat": "offence", "q": "On 2 February 2025 my client's landlord threatened on the phone to kill him if he did not vacate. Which offence?", "must_cite": [["BNS 351"]], "regime": "new" },
+    { "id": "off-cbt", "cat": "offence", "q": "An accountant entrusted with company funds transferred Rs 20 lakh to his own account in October 2024. What offence?", "must_cite": [["BNS 316"]], "regime": "new" },
+    { "id": "off-lynching", "cat": "offence", "q": "In November 2024 a mob of about fifteen people killed a man because of his caste. How does the BNS treat this?", "must_cite": [["BNS 103"]], "must_match": ["five or more"], "regime": "new" },
+    { "id": "off-hitrun", "cat": "offence", "q": "A driver hit a pedestrian in January 2025 by rash driving, killing him, and fled without informing the police. What is the punishment?", "must_cite": [["BNS 106"]], "regime": "new" },
+    { "id": "off-organised", "cat": "offence", "q": "A gang that has been running an extortion racket for years with several chargesheets against its members is caught in 2025. Which BNS offence targets this?", "must_cite": [["BNS 111"]] },
+    { "id": "off-defamation", "cat": "offence", "q": "In 2025 someone posted on Facebook that my client, a doctor, killed patients for organ trade. It is false. What criminal remedy?", "must_cite": [["BNS 356"]] },
+    { "id": "off-ransom", "cat": "offence", "q": "A child was kidnapped in September 2024 and the kidnappers demanded Rs 50 lakh ransom. Which section?", "must_cite": [["BNS 140"]], "regime": "new" },
+    { "id": "off-robbery", "cat": "offence", "q": "In 2025 a man showed a knife to a shopkeeper and took the cash from the counter. Theft, extortion or robbery?", "must_cite": [["BNS 309"]] },
+    { "id": "off-attempt", "cat": "offence", "q": "The accused shot at the victim intending to kill him in December 2024 but the victim survived with injuries. Which offence?", "must_cite": [["BNS 109"]], "regime": "new" },
+
+    { "id": "proc-defaultbail", "cat": "procedure", "q": "For an offence punishable with imprisonment for life, within how many days must the chargesheet be filed before the accused gets default bail under the BNSS?", "must_cite": [["BNSS 187"]], "must_match": ["ninety|90"] },
+    { "id": "proc-zerofir", "cat": "procedure", "q": "The police station says the incident happened outside its area and refuses to register my FIR for a cognizable offence. What does the BNSS say?", "must_cite": [["BNSS 173"]] },
+    { "id": "proc-anticipatory", "cat": "procedure", "q": "My client fears arrest in a non-bailable case. Which courts can grant anticipatory bail and under which provision?", "must_cite": [["BNSS 482"]], "must_match": ["High Court", "Court of Session"] },
+    { "id": "proc-noticearrest", "cat": "procedure", "q": "For an offence punishable with up to five years, can the police arrest without a warrant straight away, or must they first issue a notice of appearance?", "must_cite": [["BNSS 35"]] },
+    { "id": "proc-nonbailable", "cat": "procedure", "q": "On what grounds can a Magistrate grant bail in a non-bailable offence under the new code?", "must_cite": [["BNSS 480"]] },
+    { "id": "proc-undertrial", "cat": "procedure", "q": "An undertrial has been in custody for a long time. Is there a maximum period of detention under the BNSS?", "must_cite": [["BNSS 479"]], "must_match": ["half"] },
+    { "id": "proc-quash", "cat": "procedure", "q": "Under which BNSS provision can the High Court quash an FIR using its inherent powers?", "must_cite": [["BNSS 528"]] },
+    { "id": "proc-grounds", "cat": "procedure", "q": "Does the police have to tell an arrested person the grounds of arrest and that he can get bail?", "must_cite": [["BNSS 47"]] },
+    { "id": "ev-whatsapp", "cat": "evidence", "q": "I want to rely on WhatsApp chats as evidence in a 2025 trial. What is needed for them to be admissible?", "must_cite": [["BSA 63"]], "must_match": ["certificate"] },
+    { "id": "ev-confession", "cat": "evidence", "q": "The accused confessed to the police officer during interrogation. Can that confession be proved against him?", "must_cite": [["BSA 23"]] },
+    { "id": "ev-dying", "cat": "evidence", "q": "The victim told a neighbour who attacked her before she died. Is that statement admissible under the BSA?", "must_cite": [["BSA 26"]] },
+    { "id": "ev-presumption", "cat": "evidence", "q": "In a dowry death trial, is there any presumption against the husband under the new evidence law?", "must_cite": [["BSA 118"]] },
+
+    { "id": "map-302", "cat": "mapping", "q": "What is the BNS equivalent of Section 302 IPC?", "must_cite": [["BNS 103"]] },
+    { "id": "map-420", "cat": "mapping", "q": "What replaced Section 420 IPC in the BNS?", "must_cite": [["BNS 318"]], "must_match": ["318\\s*\\(4\\)"] },
+    { "id": "map-498a", "cat": "mapping", "q": "Which BNS section corresponds to Section 498A IPC?", "must_cite": [["BNS 85"]] },
+    { "id": "map-304b", "cat": "mapping", "q": "Where is dowry death (Section 304B IPC) in the BNS?", "must_cite": [["BNS 80"]] },
+    { "id": "map-406", "cat": "mapping", "q": "Section 406 IPC — what is the new section?", "must_cite": [["BNS 316"]] },
+    { "id": "map-376", "cat": "mapping", "q": "What is the BNS provision for punishment for rape that replaced Section 376 IPC?", "must_cite": [["BNS 64"]] },
+    { "id": "map-120b", "cat": "mapping", "q": "Criminal conspiracy was Section 120B IPC. Which BNS section now?", "must_cite": [["BNS 61"]] },
+    { "id": "map-354", "cat": "mapping", "q": "Which BNS section replaced Section 354 IPC (outraging modesty)?", "must_cite": [["BNS 74"]] },
+    { "id": "map-438", "cat": "mapping", "q": "Section 438 CrPC (anticipatory bail) — what is the BNSS section?", "must_cite": [["BNSS 482"]] },
+    { "id": "map-482", "cat": "mapping", "q": "Section 482 CrPC inherent powers — what is the BNSS equivalent?", "must_cite": [["BNSS 528"]] },
+    { "id": "map-65b", "cat": "mapping", "q": "Section 65B Evidence Act certificate — which BSA section replaces it?", "must_cite": [["BSA 63"]] },
+    { "id": "map-154", "cat": "mapping", "q": "FIR under Section 154 CrPC — what is the BNSS provision?", "must_cite": [["BNSS 173"]] },
+    { "id": "map-sedition", "cat": "mapping", "q": "Is sedition (Section 124A IPC) in the BNS?", "must_cite": [["BNS 152"]] },
+
+    { "id": "date-old-cheating", "cat": "date", "q": "My client cheated someone of Rs 2 lakh in March 2023. Under which law will he be charged?", "must_match": ["IPC|Indian Penal Code", "1 July 2024|July 1, 2024|01\\.07\\.2024"], "regime": "old" },
+    { "id": "date-new-murder", "cat": "date", "q": "A murder was committed on 15 September 2024. Under which law will the accused be tried?", "must_cite": [["BNS 103", "BNS 101"]], "regime": "new" },
+    { "id": "date-cutover", "cat": "date", "q": "A theft was committed on 20 June 2024 and the FIR was registered on 5 August 2024. Which law governs the offence?", "must_match": ["IPC|Indian Penal Code"], "regime": "old" },
+    { "id": "date-pending", "cat": "date", "q": "An offence was committed in 2022 and the trial has been pending since 2023. Does the BNSS now apply to the trial?", "must_cite": [["BNSS 531"]], "must_match": ["CrPC|Code of Criminal Procedure"], "regime": "old" },
+    { "id": "date-unknown", "cat": "date", "q": "What is the punishment for theft?", "must_cite": [["BNS 303"]], "regime": "unknown" },
+
+    { "id": "trap-bns512", "cat": "trap-section", "q": "What does Section 512 of the BNS provide?", "must_match": ["(does not|doesn't|no such|not) .{0,40}(exist|contain|have|section)|only 358|358 sections"], "must_not_cite": ["BNS 512"] },
+    { "id": "trap-bnss999", "cat": "trap-section", "q": "Explain Section 999 BNSS in detail.", "must_match": ["(does not|doesn't|no such|not) .{0,40}(exist|contain|have|section)|531"], "must_not_cite": ["BNSS 999"] },
+    { "id": "trap-bsa195", "cat": "trap-section", "q": "What punishment does Section 195 of the Bharatiya Sakshya Adhiniyam prescribe?", "must_match": ["(does not|doesn't|no such|not) .{0,40}(exist|contain|have|section|prescribe)|170"], "must_not_cite": ["BSA 195"] },
+    { "id": "trap-bns420", "cat": "trap-premise", "q": "What is the punishment for cheating under Section 420 BNS?", "must_cite": [["BNS 318"]], "must_match": ["420"] },
+    { "id": "trap-bns302", "cat": "trap-premise", "q": "BNS Section 302 punishes murder. What is the minimum sentence under it?", "must_cite": [["BNS 103"]], "must_match": ["religious"] },
+
+    { "id": "trap-fakecase", "cat": "trap-case", "q": "Summarise the Supreme Court judgment in Rakesh Malhotra v. State of Punjab (2024) 3 SCC 455 on anticipatory bail under the BNSS.", "must_match": ["(cannot|can't|unable|not able|do not|don't|no).{0,80}(verify|confirm|access|cite|provide|information|judgment|case)"], "allow_case_mention": true },
+    { "id": "trap-givecases", "cat": "trap-case", "q": "Give me three Supreme Court judgments with citations on default bail under Section 187 BNSS.", "must_match": ["(cannot|can't|unable|not able|do not|don't).{0,80}(case|judgment|citation)"] },
+    { "id": "trap-landmark", "cat": "trap-case", "q": "Which landmark case held that electronic evidence needs a certificate? Give the case name.", "must_match": ["(cannot|can't|unable|not able|do not|don't).{0,80}(case|judgment|name)"] },
+
+    { "id": "hi-cheating", "cat": "hindi", "q": "धोखाधड़ी के लिए BNS में क्या सजा है? घटना 2025 की है और आरोपी ने पैसे लेकर नौकरी नहीं दिलाई।", "must_cite": [["BNS 318"]], "must_match": ["[\\u0900-\\u097F]{3,}.*[\\u0900-\\u097F]{3,}.*[\\u0900-\\u097F]{3,}"] },
+    { "id": "hi-anticipatory", "cat": "hindi", "q": "अग्रिम जमानत के लिए BNSS की कौन सी धारा लागू होगी?", "must_cite": [["BNSS 482"]], "must_match": ["[\\u0900-\\u097F]{3,}.*[\\u0900-\\u097F]{3,}"] },
+    { "id": "hi-dowry", "cat": "hindi", "q": "दहेज मृत्यु की परिभाषा क्या है और सजा कितनी है?", "must_cite": [["BNS 80"]], "must_match": ["[\\u0900-\\u097F]{3,}.*[\\u0900-\\u097F]{3,}"] },
+    { "id": "hi-arrest", "cat": "hindi", "q": "पुलिस बिना वारंट कब गिरफ्तार कर सकती है?", "must_cite": [["BNSS 35"]], "must_match": ["[\\u0900-\\u097F]{3,}.*[\\u0900-\\u097F]{3,}"] },
+
+    { "id": "oos-cheque", "cat": "out-of-scope", "q": "My client's cheque bounced in 2025. What is the time limit for filing the complaint?", "must_match": ["Negotiable Instruments", "not verified|verify"] },
+    { "id": "oos-divorce", "cat": "out-of-scope", "q": "What is the procedure for divorce by mutual consent for a Hindu couple?", "must_match": ["Hindu Marriage Act", "not verified|verify"] }
+  ],
+
+  "suggestions": [
+    { "id": "sug-jobfraud", "category": "Criminal Law", "doc": "FIR Draft", "facts": "On 10 March 2025 the accused took Rs 5 lakh from the complainant promising a government job, gave a forged appointment letter and then stopped answering calls.", "must_include": ["BNS 318", "BNS 336"] },
+    { "id": "sug-dowry", "category": "Criminal Law", "doc": "Criminal Complaint", "facts": "The complainant's daughter, married in 2021, died of burns at her in-laws' house in January 2025 after repeated dowry demands by her husband.", "must_include": ["BNS 80"] },
+    { "id": "sug-snatch", "category": "Criminal Law", "doc": "FIR Draft", "facts": "On 3 September 2024 two men on a bike snatched the complainant's gold chain near the market and fled.", "must_include": ["BNS 304"] },
+    { "id": "sug-threat", "category": "Criminal Law", "doc": "Criminal Complaint", "facts": "In February 2025 the accused repeatedly threatened over the phone to kill the complainant and his family unless he withdrew a civil suit.", "must_include": ["BNS 351"] },
+    { "id": "sug-otp", "category": "Cyber Law", "doc": "Cyber Fraud Complaint", "facts": "A caller pretending to be a bank officer got the complainant's OTP in 2025 and withdrew Rs 80,000.", "must_include": ["BNS 319"] }
+  ]
+}

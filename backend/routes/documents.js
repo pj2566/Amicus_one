@@ -631,11 +631,31 @@ router.get('/by-client/:clientId', verifyToken, async (req, res) => {
 });
 
 // Get history
+// Template clauses for the live preview in the drafting studio (placeholders like [LANDLORD_NAME])
+router.get('/template/:documentTypeId', verifyToken, async (req, res) => {
+  try {
+    const language = req.query.language === 'Hindi' ? 'Hindi' : 'English';
+    const { data, error } = await supabase
+      .from('document_templates')
+      .select('document_type, description, clauses')
+      .eq('document_type_id', req.params.documentTypeId)
+      .eq('language', language)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return res.json({ template: null });
+    res.json({ template: { ...data, clauses: (data.clauses || []).sort((a, b) => a.order - b.order) } });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch template' });
+  }
+});
+
 router.get('/history', verifyToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('documents')
-      .select('id, category_name, document_type_name, created_at, status')
+      .select('id, category_name, document_type_name, created_at, status, client_id, is_shared_with_firm')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false })
       .limit(20);

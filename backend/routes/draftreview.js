@@ -4,7 +4,7 @@ const router = express.Router();
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
-const llm = require('../lib/llm');
+const { reviewDrafts, MAX_DRAFT_CHARS } = require('../lib/research');
 const supabase = require('../config/supabase');
 const { verifyToken } = require('./auth');
 
@@ -60,19 +60,6 @@ async function extractText(file) {
   return '';
 }
 
-// ── AI call ───────────────────────────────────────────────────────────────────
-function callAI(prompt, maxTokens = 4000) {
-  return llm.chat({
-    system: `You are a senior Indian legal analyst and expert document reviewer with 25+ years of experience.
-You specialise in comparative legal document analysis for Indian lawyers and law firms.
-You provide highly detailed, professional, reasoning-backed comparative reviews.
-Your analysis is structured, precise, and directly useful for practicing advocates.`,
-    messages: [{ role: 'user', content: prompt }],
-    maxTokens,
-    temperature: 0.2
-  });
-}
-
 // ── POST /api/draft-review/analyse ────────────────────────────────────────────
 // Accepts 2-5 draft files, extracts text, runs comparative AI analysis
 router.post('/analyse', verifyToken, upload.array('drafts', 5), async (req, res) => {
@@ -117,84 +104,22 @@ router.post('/analyse', verifyToken, upload.array('drafts', 5), async (req, res)
       }
 
       const charCount = trimmedText.length;
-      // Cap each draft at 4000 chars to stay well within Groq token limits
-      const capped = trimmedText.slice(0, 4000);
-      console.log(`  ✅ Draft ${i + 1}: ${charCount} chars extracted, using first ${capped.length}`);
+      const capped = trimmedText.slice(0, MAX_DRAFT_CHARS);
+      console.log(`  ✅ Draft ${i + 1}: ${charCount} chars extracted, using ${capped.length}`);
 
       drafts.push({
         name: file.originalname,
         text: capped,
-        fullLength: charCount
+        fullLength: charCount,
+        truncated: charCount > capped.length
       });
     }
 
-    // ── Build analysis prompt ──
-    const draftSections = drafts.map((d, i) =>
-      `DRAFT ${i + 1}: "${d.name}"\n${'-'.repeat(60)}\n${d.text}\n${'-'.repeat(60)}`
-    ).join('\n\n');
-
-    const analysisPrompt = `A lawyer has uploaded ${drafts.length} drafts for comparative legal review. Analyse them carefully.
-
-${draftSections}
-
----
-
-Provide a COMPREHENSIVE comparative legal analysis structured EXACTLY as follows:
-
-## 1. DOCUMENT OVERVIEW
-For each draft: document type, parties, governing law, jurisdiction, overall structure.
-
-## 2. CLAUSE-BY-CLAUSE COMPARISON
-Compare key clauses across all drafts:
-- Which draft has stronger/more protective language?
-- Identify missing clauses in each draft
-- Compare scope, obligations, rights, liabilities, indemnities, termination, dispute resolution
-- Note any vague, ambiguous, or risky wording
-
-## 3. LEGAL PROTECTIONS ANALYSIS
-For each draft:
-- Strong protective clauses
-- Weak or missing protections
-- Enforceability of key provisions
-- Litigation risk exposure
-
-## 4. DRAFTING QUALITY ASSESSMENT
-For each draft — rate and explain:
-- Clarity of language
-- Precision of definitions
-- Consistency throughout
-- Compliance with Indian legal standards
-- Structural organisation
-
-## 5. RISKS AND RED FLAGS
-For each draft:
-- Risky or one-sided clauses
-- Vague language that could cause disputes
-- Missing standard Indian legal protections
-- Unenforceable or problematic provisions
-
-## 6. STRENGTHS AND WEAKNESSES SUMMARY
-For each draft:
-- Top 3 strengths
-- Top 3 weaknesses
-- Overall score out of 10
-
-## 7. FINAL RECOMMENDATION
-- State clearly which draft is the STRONGEST overall
-- Explain WHY using specific legal reasoning referencing actual clause language
-- List specific improvements needed for each draft
-- Suggest which clauses from weaker drafts should be incorporated into the strongest draft
-
-Be specific, detailed, and professional. Reference actual language from the drafts above.
-This analysis will be used by practicing Indian advocates for legal decision-making.`;
-
-    console.log(`🤖 Sending to Groq: ~${Math.round(analysisPrompt.length / 4)} estimated tokens`);
-
-    let analysis;
+    let analysis, verification;
     try {
-      analysis = await callAI(analysisPrompt, 4000);
+      ({ analysis, verification } = await reviewDrafts({ drafts }));
     } catch (groqErr) {
-      console.error('❌ Groq analysis failed:', groqErr.status, groqErr.message);
+      console.error('❌ Draft analysis failed:', groqErr.status, groqErr.message);
 
       if (groqErr.status === 429) {
         return res.status(503).json({
@@ -212,7 +137,7 @@ This analysis will be used by practicing Indian advocates for legal decision-mak
     }
 
     if (!analysis || !analysis.trim()) {
-      console.error('❌ Groq returned empty response');
+      console.error('❌ AI returned empty response');
       return res.status(500).json({ error: 'AI returned an empty response. Please try again.' });
     }
 
@@ -237,6 +162,7 @@ This analysis will be used by practicing Indian advocates for legal decision-mak
     return res.json({
       success: true,
       analysis,
+      verification,
       draftsAnalysed: drafts.map(d => ({
         name: d.name,
         extractedLength: d.fullLength

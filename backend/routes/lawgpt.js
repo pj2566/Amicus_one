@@ -7,7 +7,7 @@ const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const officeParser = require('officeparser');
 const Tesseract = require('tesseract.js');
-const llm = require('../lib/llm');
+const { answerQuestion, analyseDocument } = require('../lib/research');
 const  supabase  = require('../config/supabase');
 
 const upload = multer({
@@ -311,73 +311,22 @@ router.post('/chats/:id/message', requireAuth, async (req, res) => {
       }
     }
 
-    // 2. Search legal_sections DB for relevant sections
-    const { data: sections } = await supabase
-      .from('legal_sections')
-      .select('section_number, act_name, act_short, description')
-      .textSearch('description', message.trim().split(' ').slice(0, 5).join(' | '), {
-        type: 'websearch',
-        config: 'english'
-      })
-      .limit(4);
-
-    const sectionContext = sections && sections.length > 0
-      ? `\n\nRELEVANT LEGAL SECTIONS FROM DATABASE:\n` +
-        sections.map(s => `• ${s.section_number}, ${s.act_name} (${s.act_short}): ${s.description}`).join('\n')
-      : '';
-
-    // 3. Build system prompt
-    const systemPrompt = `You are LawGPT, an expert Indian legal research assistant built for practicing advocates and law firms in India. You provide deeply detailed, comprehensive, research-grade legal analysis.
-
-You specialize in:
-- Indian Penal Code (IPC) and Bharatiya Nyaya Sanhita (BNS)
-- Code of Criminal Procedure (CrPC) and Bharatiya Nagarik Suraksha Sanhita (BNSS)
-- Code of Civil Procedure (CPC)
-- Constitution of India
-- IT Act 2000
-- GST Act
-- Consumer Protection Act
-- Indian Contract Act
-- Transfer of Property Act
-- Hindu Marriage Act and family law
-- All major Indian acts and statutes
-- Supreme Court and High Court judgments
-- Legal principles, doctrines, and maxims
-
-RESPONSE RULES:
-1. Always give DETAILED, COMPREHENSIVE answers — never truncate or summarize superficially
-2. Structure every answer with clear headings and sub-headings
-3. Always cite specific sections — format as [Section X, Act Name]
-4. Never invent section numbers — only cite what you know with certainty
-5. For every legal point, explain: what the law says, how it applies, and what the consequence is
-6. Include relevant case law and precedents where applicable
-7. Use formal legal language throughout
-8. Always ground answers in Indian law specifically
-9. For complex questions, break down into: Legal Framework, Applicable Provisions, Analysis, Conclusion
-10. Minimum response length for research questions: 500-1000 words
-11. Never say "I cannot provide detailed information" — always provide maximum detail possible
-${documentContext ? `\nACTIVE DOCUMENT CONTEXT:\nThe lawyer has uploaded a document titled "${chat.pdf_name}". The following are the most relevant sections from that document based on the current question. Use this as primary context for your analysis:\n\n${documentContext}` : ''}
-${sectionContext}`;
-
-    // 4. Build message history (last 10 messages for context)
-    const recentMessages = existingMessages.slice(-10).map(m => ({
-      role: m.role,
-      content: m.content
-    }));
-
-    // 5. Call AI
-    const reply = await llm.chat({
-      system: systemPrompt,
-      messages: [...recentMessages, { role: 'user', content: message.trim() }],
-      maxTokens: 4000,
-      temperature: 0.3
+    // 2–5. Retrieve official statute text, answer from it, verify every citation
+    const result = await answerQuestion({
+      question: message.trim(),
+      history: existingMessages,
+      documentName: chat.pdf_name || null,
+      documentContext
     });
-
-    const aiReply = reply || 'Sorry, I could not generate a response.';
+    const aiReply = result.reply || 'Sorry, I could not generate a response.';
+    const sections = result.cited_sections;
 
     // 6. Build updated messages array
     const userMessage = { role: 'user', content: message.trim(), timestamp: new Date().toISOString() };
-    const assistantMessage = { role: 'assistant', content: aiReply, timestamp: new Date().toISOString(), cited_sections: sections || [] };
+    const assistantMessage = {
+      role: 'assistant', content: aiReply, timestamp: new Date().toISOString(),
+      cited_sections: sections, verification: result.verification
+    };
     const updatedMessages = [...existingMessages, userMessage, assistantMessage];
 
     // 7. Auto-title: use first user message as chat title
@@ -422,7 +371,8 @@ ${sectionContext}`;
     res.json({
       success: true,
       reply: aiReply,
-      cited_sections: sections || [],
+      cited_sections: sections,
+      verification: result.verification,
       title: newTitle
     });
 
@@ -559,9 +509,8 @@ router.post('/chats/:id/analyse', requireAuth, async (req, res) => {
 
     let fullText = '';
     if (chunks && chunks.length > 0) {
-      // Use more chunks for analysis — up to 20 chunks (~16000 words)
-      const analysisChunks = chunks.slice(0, 20);
-      fullText = analysisChunks.map(c => c.chunk_text).join('\n\n');
+      // Gemini's context fits long documents — up to 80 chunks (~56,000 words, overlap removed)
+      fullText = chunks.slice(0, 80).map((c, i) => i === 0 ? c.chunk_text : c.chunk_text.split(/\s+/).slice(100).join(' ')).join('\n\n');
     } else {
       fullText = chat.pdf_context || '';
     }
@@ -572,97 +521,9 @@ router.post('/chats/:id/analyse', requireAuth, async (req, res) => {
 
     console.log(`📊 Analysing document: ${chat.pdf_name} — ${chunks?.length || 0} chunks`);
 
-    // 3. Run analysis using Groq
-    const analysisPrompt = `You are an expert Indian legal analyst. A lawyer has uploaded a legal document for comprehensive analysis.
-
-DOCUMENT NAME: ${chat.pdf_name}
-
-DOCUMENT CONTENT:
-${fullText}
-
-Provide a COMPREHENSIVE, DETAILED legal analysis covering ALL of the following sections. Be thorough and specific — this is for professional legal research:
-
----
-
-## 1. DOCUMENT OVERVIEW
-- Type of document (judgment/case file/agreement/petition/order/etc.)
-- Court/authority (if applicable)
-- Parties involved (full names and roles)
-- Date and jurisdiction
-- Brief summary of the matter
-
----
-
-## 2. LEGAL HEADS / ISSUES FRAMED
-List every legal issue, question, or head raised in this document. For each head:
-- State the issue clearly
-- Identify which party raised it
-- Note the legal basis
-
----
-
-## 3. ACTS AND PROVISIONS CITED
-List ALL acts, sections, and provisions mentioned in the document:
-
-### Acts/Sections IN FAVOUR of the Petitioner/Plaintiff/Appellant:
-For each provision: [Section/Article] — [Act Name] — How it supports their case
-
-### Acts/Sections IN FAVOUR of the Respondent/Defendant:
-For each provision: [Section/Article] — [Act Name] — How it supports their case
-
-### Neutral/Procedural Provisions:
-Provisions cited for procedural purposes
-
----
-
-## 4. CASES AND PRECEDENTS CITED
-List EVERY case mentioned in the document individually:
-For each case:
-- Case name
-- Citation (if mentioned)
-- Court
-- Relevance — what principle/ratio was cited and by which party
-
----
-
-## 5. KEY ARGUMENTS
-### Arguments by Petitioner/Plaintiff/Appellant:
-Detail each argument comprehensively
-
-### Arguments by Respondent/Defendant:
-Detail each argument comprehensively
-
----
-
-## 6. FINDINGS AND OBSERVATIONS
-Key findings, observations, or directions made in this document
-
----
-
-## 7. FINAL OUTCOME / ORDER / HOLDING
-What was decided, ordered, or concluded
-
----
-
-## 8. LEGAL PRINCIPLES AND DOCTRINES
-Any legal principles, maxims, or doctrines discussed or applied
-
----
-
-## 9. RESEARCH NOTES FOR LAWYER
-Important points, flags, or areas requiring further research based on this document
-
----
-
-Be exhaustive and comprehensive. This analysis will be used for professional legal research.`;
-
-    const analysis = await llm.chat({
-      system: 'You are an expert Indian legal analyst providing comprehensive document analysis for practicing advocates. Always be detailed, thorough, and professionally accurate.',
-      messages: [{ role: 'user', content: analysisPrompt }],
-      maxTokens: 4000,
-      temperature: 0.2
-    });
-    const analysisResult = analysis || 'Analysis could not be generated.';
+    // 3. Analyse: report only what the document contains, verify cases and provisions against it
+    const result = await analyseDocument({ name: chat.pdf_name, text: fullText });
+    const analysisResult = result.analysis || 'Analysis could not be generated.';
 
     // 4. Save analysis as a message in the chat
     const existingMessages = chat.messages || [];
@@ -671,7 +532,8 @@ Be exhaustive and comprehensive. This analysis will be used for professional leg
       content: `📊 **DOCUMENT ANALYSIS: ${chat.pdf_name}**\n\n${analysisResult}`,
       timestamp: new Date().toISOString(),
       is_analysis: true,
-      cited_sections: []
+      cited_sections: result.cited_sections,
+      verification: result.verification
     };
 
     const updatedMessages = [
