@@ -34,7 +34,11 @@ const walk = dir => fs.readdirSync(dir, { withFileTypes: true })
   const version = await request('POST', `${API}/sites/${SITE}/versions`, {
     config: {
       rewrites: hosting.rewrites.map(r => ({ glob: r.source, path: r.destination })),
-      headers: hosting.headers.map(h => ({ glob: h.source, headers: Object.fromEntries(h.headers.map(x => [x.key, x.value])) }))
+      // Page routes (no file extension) use a regex rule so "/" and "/login" are never cached stale
+      headers: hosting.headers.map(h => ({
+        ...(h.regex ? { regex: h.regex } : { glob: h.source }),
+        headers: Object.fromEntries(h.headers.map(x => [x.key, x.value]))
+      }))
     }
   });
 
